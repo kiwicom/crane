@@ -1,0 +1,57 @@
+[Default]
+files = **.(md|rst|yml), .coafile
+
+indent_size = 4
+use_spaces = True
+max_line_length = 120
+max_lines_per_file = 1000
+file_naming_convention = snake
+
+[filenames]
+bears = FilenameBear
+
+[long-files]
+bears = LineCountBear
+
+[long-lines]
+bears = LineLengthBear
+
+[spacing]
+ignore = **.yml, .coafile
+bears = SpaceConsistencyBear
+
+[config-spacing]
+files = **.yml, .coafile
+bears = SpaceConsistencyBear
+indent_size = 2
+
+[dockerfile]
+files = Dockerfile
+bears = DockerfileLintBear
+
+[yaml]
+files = **.(yml|yaml)
+bears = YAMLLintBear
+yamllint_config = .yamllint
+
+[markdown]
+files = **.md
+bears = MarkdownBear
+
+[commit]
+bears = GitCommitBear
+shortlog_length = 72
+
+[keywords]
+bears = KeywordBear
+keywords, ci_keywords = TODO, FIXME  # Ignore KeywordBear
+cs_keywords =
+
+[links]
+bears = InvalidLinkBear
+# We ignore:
+# - example.com (coala default)
+# - {}-style formatting (coala default)
+# - %s-style formatting
+# - gitlab.skypicker.com since it requires auth
+ignore_regex = ([./]example.com|{|%(?:\(\w+?\))?s|gitlab\.skypicker\.com)
