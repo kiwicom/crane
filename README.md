@@ -2,6 +2,37 @@
 
 A GitLab CI ready image for Rancher upgrades.
 
+## How to use
+
+- Deploy your application on Rancher manually
+- Get an API key
+  - Name it `gitlab/group/name deployment`, or similar
+- Add the secret key as a secret variable in the project (`RANCHER_SECRET_KEY`)
+  - <https://gitlab.skypicker.com/group/name/variables>
+- Edit `.gitlab-ci.yml`
+
+
+```
+stages:
+ [...]
+ - deploy
+
+variables:
+  TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+  RANCHER_URL: https://example.com/
+  RANCHER_ACCESS_KEY: 9vQ4fcpn4Kfuvjxkcpc9PoudImzxoj6pQxa
+  RANCHER_PROJECT_ID: 1a81
+  RANCHER_SERVICE_ID: 1s1456
+
+[...]
+
+production:
+  stage: deploy
+  image: registry.skypicker.com:5005/simone/crane
+  script:
+    - crane --new-image $TEST_IMAGE
+```
+
 ## Environment variables and command flags
 
 | CLI flag           | Environment variable     | Required           | Default |
