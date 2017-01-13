@@ -16,7 +16,7 @@ glog.bind(time=time.time())
 @click.option('--new-image', envvar='RANCHER_SERVICE_IMAGE', default=None)
 @click.option('--batch-size', envvar='RANCHER_BATCH_SIZE', default=1)
 @click.option('--batch-interval', envvar='RANCHER_BATCH_INTERVAL', default=2)
-@click.option('--start-first', envvar='RANCHER_START_FIRST', default=False)
+@click.option('--start-first', envvar='RANCHER_START_FIRST', default=False, is_flag=True)
 @click.option('--sidekick', envvar='RANCHER_SIDEKICK_NAME', default=None)
 def main(rancher_url, access, secret, project, service, new_image, batch_size, batch_interval, start_first, sidekick):
 
