@@ -2,18 +2,18 @@ from setuptools import setup
 
 
 setup(
-    name='advance',
+    name='crane',
     version='0.1.0',
-    url='https://gitlab.skypicker.com/simone/advance',
+    url='https://gitlab.skypicker.com/simone/crane',
     author='Simone Esposito',
     author_email='simone@kiwi.com',
-    download_url='https://gitlab.skypicker.com/simone/advance',
+    download_url='https://gitlab.skypicker.com/simone/crane',
     description='GitLab CI + Rancher deployment',
-    packages=['advance'],
+    packages=['crane'],
     install_requires=[
         'requests<3',
     ],
-    entry_points={'console_scripts': 'advance=advance:main'},
+    entry_points={'console_scripts': 'crane=crane:main'},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

@@ -12,5 +12,5 @@ COPY . /app
 
 RUN python setup.py install
 
-CMD ["advance"]
-LABEL name=advance version=dev
+CMD ["crane"]
+LABEL name=crane version=dev
