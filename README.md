@@ -6,9 +6,9 @@ A GitLab CI ready image for Rancher upgrades.
 
 - Deploy your application on Rancher manually
 - Get an API key
-  - Name it `gitlab/group/name deployment`, or similar
+  - Name it `gitlab/group/project deployment`, or similar
 - Add the secret key as a secret variable in the project (`RANCHER_SECRET_KEY`)
-  - <https://gitlab.skypicker.com/group/name/variables>
+  - <https://gitlab.skypicker.com/group/project/variables>
 - Edit `.gitlab-ci.yml`
 
 
