@@ -38,6 +38,9 @@ production:
     GIT_STRATEGY: none
   script:
     - crane --new-image $TEST_IMAGE
+  environment:
+    name: production
+    url: https://your-app.example.com/                      # Change to the URL of your app, or remove if none
   when: manual
 ```
 
