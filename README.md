@@ -33,6 +33,7 @@ production:
     GIT_STRATEGY: none
   script:
     - crane --new-image $TEST_IMAGE
+  when: manual
 ```
 
 ## Environment variables and command flags
