@@ -43,15 +43,15 @@ production:
 
 ## Environment variables and command flags
 
-| CLI flag           | Environment variable     | Required           | Default |
-| ------------------ | ------------------------ | ------------------ | ------- |
-| `--rancher-url`    | `RANCHER_URL`            | :white_check_mark: |         |
-| `--access`         | `RANCHER_ACCESS_KEY`     | :white_check_mark: |         |
-| `--secret`         | `RANCHER_SECRET_KEY`     | :white_check_mark: |         |
-| `--project`        | `RANCHER_PROJECT_ID`     | :white_check_mark: |         |
-| `--service`        | `RANCHER_SERVICE_ID`     | :white_check_mark: |         |
-| `--new-image`      | `RANCHER_SERVICE_IMAGE`  | :x:                | None    |
-| `--batch-size`     | `RANCHER_BATCH_SIZE`     | :x:                | 1       |
-| `--batch-interval` | `RANCHER_BATCH_INTERVAL` | :x:                | 2       |
-| `--start-first`    | `RANCHER_START_FIRST`    | :x:                | False   |
-| `--sidekick`       | `RANCHER_SIDEKICK_NAME`  | :x:                | None    |
+| CLI flag           | Environment variable     | Required | Default |
+| ------------------ | ------------------------ | -------- | ------- |
+| `--rancher-url`    | `RANCHER_URL`            | Yes      |         |
+| `--access`         | `RANCHER_ACCESS_KEY`     | Yes      |         |
+| `--secret`         | `RANCHER_SECRET_KEY`     | Yes      |         |
+| `--project`        | `RANCHER_PROJECT_ID`     | Yes      |         |
+| `--service`        | `RANCHER_SERVICE_ID`     | Yes      |         |
+| `--new-image`      | `RANCHER_SERVICE_IMAGE`  | No       | None    |
+| `--batch-size`     | `RANCHER_BATCH_SIZE`     | No       | 1       |
+| `--batch-interval` | `RANCHER_BATCH_INTERVAL` | No       | 2       |
+| `--start-first`    | `RANCHER_START_FIRST`    | No       | False   |
+| `--sidekick`       | `RANCHER_SIDEKICK_NAME`  | No       | None    |
