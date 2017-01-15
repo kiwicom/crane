@@ -24,10 +24,10 @@ stages:
 
 variables:
   TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-  RANCHER_URL: https://example.com/
-  RANCHER_ACCESS_KEY: 9vQ4fcpn4Kfuvjxkcpc9PoudImzxoj6pQxa
-  RANCHER_PROJECT_ID: 1a81
-  RANCHER_SERVICE_ID: 1s1456
+  RANCHER_URL: https://example.com/                         # Change to the Rancher URL
+  RANCHER_ACCESS_KEY: 9vQ4fcpn4Kfuvjxkcpc9PoudImzxoj6pQxa   # Change to your Rancher access key
+  RANCHER_PROJECT_ID: 1a81                                  # Change to the Project ID of your app
+  RANCHER_SERVICE_ID: 1s1456                                # Change to the Service ID of your app
 
 [...]
 
