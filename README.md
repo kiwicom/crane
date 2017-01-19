@@ -9,6 +9,7 @@ A GitLab CI ready image for Rancher upgrades.
   - click the `API` button in the environment your app is in, then `Add Environment API key`
   - name it `gitlab/group/project deployment`, or similar
 - Add the secret key as a secret variable in the project (`RANCHER_SECRET_KEY`)
+  - add the `RANCHER_URL`, `RANCHER_ACCESS_KEY`, `RANCHER_PROJECT_ID`, `RANCHER_SERVICE_ID` either in secret variables, or `.gitlab-ci.yml`
   - <https://gitlab.skypicker.com/group/project/variables>
 - Go to your application on Rancher, and note the Project ID / Service ID variables in the URL
   - Example URL: <https://example.com/env/1a81/apps/stacks/1e551/services/1s1456/containers>
