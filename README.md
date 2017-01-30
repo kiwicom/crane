@@ -61,3 +61,4 @@ production:
 | `--start-first`         | `RANCHER_START_FIRST`       | No       | False   |
 | `--sidekick`            | `RANCHER_SIDEKICK_NAME`     | No       | None    |
 | `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 60      |
+| `--no-finish-upgrade`   | `CRANE_NO_FINISH_UPGRADE`   | No       | False   |
