@@ -67,7 +67,7 @@ def main(rancher_url, access, secret, project, service, new_image, batch_size, b
         log.info(event='sleep_after_upgrade', length=sleep_after_upgrade)
         time.sleep(sleep_after_upgrade)
 
-     if finish_upgrade and response['state'] == 'upgraded':
+    if finish_upgrade and response['state'] == 'upgraded':
         r = requests.post(response['actions']['finishupgrade'], auth=(access, secret), timeout=60, json={})
         r.raise_for_status()
         log.info(event='upgraded')
