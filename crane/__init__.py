@@ -19,8 +19,8 @@ glog.bind(time=time.time())
 @click.option('--start-first', envvar='RANCHER_START_FIRST', default=False, is_flag=True)
 @click.option('--sidekick', envvar='RANCHER_SIDEKICK_NAME', default=None)
 @click.option('--sleep-after-upgrade', envvar='CRANE_SLEEP_AFTER_UPGRADE', default=None)
-@click.option('--no-finish-upgrade', envvar='CRANE_FINISH_UPGRADE', default=False, is_flag=True)
-def main(rancher_url, access, secret, project, service, new_image, batch_size, batch_interval, start_first, sidekick, sleep_after_upgrade, finish_upgrade):
+@click.option('--no-finish-upgrade', envvar='CRANE_NO_FINISH_UPGRADE', default=False, is_flag=True)
+def main(rancher_url, access, secret, project, service, new_image, batch_size, batch_interval, start_first, sidekick, sleep_after_upgrade, no_finish_upgrade):
 
     log = glog.bind(project=project, service=service, new_image=new_image, sidekick=sidekick)
 
@@ -67,7 +67,7 @@ def main(rancher_url, access, secret, project, service, new_image, batch_size, b
         log.info(event='sleep_after_upgrade', length=sleep_after_upgrade)
         time.sleep(sleep_after_upgrade)
 
-    if finish_upgrade and response['state'] == 'upgraded':
+    if no_finish_upgrade is False and response['state'] == 'upgraded':
         r = requests.post(response['actions']['finishupgrade'], auth=(access, secret), timeout=60, json={})
         r.raise_for_status()
         log.info(event='upgraded')
