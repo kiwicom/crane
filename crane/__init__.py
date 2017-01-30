@@ -18,8 +18,8 @@ glog.bind(time=time.time())
 @click.option('--batch-interval', envvar='RANCHER_BATCH_INTERVAL', default=2)
 @click.option('--start-first', envvar='RANCHER_START_FIRST', default=False, is_flag=True)
 @click.option('--sidekick', envvar='RANCHER_SIDEKICK_NAME', default=None)
-@click.option('--sleep-after-upgrade', 'CRANE_SLEEP_AFTER_UPGRADE', default=None)
-@click.option('--no-finish-upgrade', 'CRANE_FINISH_UPGRADE', default=False, is_flag=True)
+@click.option('--sleep-after-upgrade', envvar='CRANE_SLEEP_AFTER_UPGRADE', default=None)
+@click.option('--no-finish-upgrade', envvar='CRANE_FINISH_UPGRADE', default=False, is_flag=True)
 def main(rancher_url, access, secret, project, service, new_image, batch_size, batch_interval, start_first, sidekick, sleep_after_upgrade, finish_upgrade):
 
     log = glog.bind(project=project, service=service, new_image=new_image, sidekick=sidekick)
