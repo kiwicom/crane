@@ -28,12 +28,12 @@ def main(rancher_url, access, secret, project, service, new_image, batch_size, b
         launch_config = None
         secondary_launch_config = get_launch_config(rancher_url, access, secret, project, service, sidekick)
         if new_image:
-            secondary_launch_config[0]['imageUuid'] = 'docker:{0}'.format(new_image)
+            secondary_launch_config[0]['imageUuid'] = f'docker:{new_image}'
     else:
         launch_config = get_launch_config(rancher_url, access, secret, project, service, sidekick)
         secondary_launch_config = []
         if new_image:
-            launch_config['imageUuid'] = 'docker:{0}'.format(new_image)
+            launch_config['imageUuid'] = f'docker:{new_image}'
 
     request_body = {
         'inServiceStrategy': {
@@ -44,8 +44,9 @@ def main(rancher_url, access, secret, project, service, new_image, batch_size, b
             'secondaryLaunchConfigs': secondary_launch_config
         }
     }
+
     log.info(event='upgrading')
-    api_url = '{0}/v1/projects/{1}/services/{2}/?action=upgrade'.format(rancher_url, project, service)
+    api_url = f'{rancher_url}/v1/projects/{project}/services/{service}/?action=upgrade'
     r = requests.post(api_url, auth=(access, secret), timeout=60, json=request_body)
     r.raise_for_status()
     response = json.loads(r.text)
@@ -74,7 +75,7 @@ def main(rancher_url, access, secret, project, service, new_image, batch_size, b
 
 
 def get_launch_config(url, access, secret, project, service, sidekick=None):
-    api_url = '{0}/v1/projects/{1}/services/{2}'.format(url, project, service)
+    api_url = f'{url}/v1/projects/{project}/services/{service}'
 
     r = requests.get(api_url, auth=(access, secret), timeout=60)
     r.raise_for_status()
