@@ -1,17 +1,18 @@
-import requests
-import json
 from structlog import get_logger
 import click
 import time
+from . import utils, ids
 
 glog = get_logger()
 glog.bind(time=time.time())
+
 
 @click.command()
 @click.option('--rancher-url', envvar='RANCHER_URL', required=True)
 @click.option('--access', envvar='RANCHER_ACCESS_KEY', required=True)
 @click.option('--secret', envvar='RANCHER_SECRET_KEY', required=True)
 @click.option('--project', envvar='RANCHER_PROJECT_ID', required=True)
+@click.option('--stack', envvar='RANCHER_STACK_NAME', required=False)
 @click.option('--service', envvar='RANCHER_SERVICE_ID', required=True)
 @click.option('--new-image', envvar='RANCHER_SERVICE_IMAGE', default=None)
 @click.option('--batch-size', envvar='RANCHER_BATCH_SIZE', default=1)
@@ -20,72 +21,23 @@ glog.bind(time=time.time())
 @click.option('--sidekick', envvar='RANCHER_SIDEKICK_NAME', default=None)
 @click.option('--sleep-after-upgrade', envvar='CRANE_SLEEP_AFTER_UPGRADE', default=None)
 @click.option('--no-finish-upgrade', envvar='CRANE_NO_FINISH_UPGRADE', default=False, is_flag=True)
-def main(rancher_url, access, secret, project, service, new_image, batch_size, batch_interval, start_first, sidekick, sleep_after_upgrade, no_finish_upgrade):
+def main(rancher_url, access, secret, project, stack, service, new_image, batch_size, batch_interval, start_first, sidekick,
+         sleep_after_upgrade, no_finish_upgrade):
 
     log = glog.bind(project=project, service=service, new_image=new_image, sidekick=sidekick)
 
-    if sidekick:
-        launch_config = None
-        secondary_launch_config = get_launch_config(rancher_url, access, secret, project, service, sidekick)
-        if new_image:
-            secondary_launch_config[0]['imageUuid'] = f'docker:{new_image}'
-    else:
-        launch_config = get_launch_config(rancher_url, access, secret, project, service, sidekick)
-        secondary_launch_config = []
-        if new_image:
-            launch_config['imageUuid'] = f'docker:{new_image}'
+    stack, service = ids.names_to_ids(rancher_url, project, stack, service, access, secret)
 
-    request_body = {
-        'inServiceStrategy': {
-            'batchSize': batch_size,
-            'intervalMillis': batch_interval * 1000,
-            'startFirst': start_first,
-            'launchConfig': launch_config,
-            'secondaryLaunchConfigs': secondary_launch_config
-        }
-    }
+    launch_config, secondary_launch_config = utils.get_launch_configs(
+        rancher_url, project, service, sidekick, new_image, access, secret
+    )
+    upgrade_request = utils.get_upgrade_request(
+        batch_size, batch_interval, start_first, launch_config, secondary_launch_config
+    )
 
-    log.info(event='upgrading')
-    api_url = f'{rancher_url}/v1/projects/{project}/services/{service}/?action=upgrade'
-    r = requests.post(api_url, auth=(access, secret), timeout=60, json=request_body)
-    r.raise_for_status()
-    response = json.loads(r.text)
-
-    service_url = response['links']['self']
-    service_upgraded = False
-
-    while service_upgraded is False:
-        r = requests.get(service_url, auth=(access, secret), timeout=60)
-        r.raise_for_status()
-        response = json.loads(r.text)
-        if response['state'] == 'upgrading':
-            log.info(event='wait_for_upgrade', state=response['state'])
-            time.sleep(3)
-            continue
-        service_upgraded = True
-
-    if sleep_after_upgrade:
-        log.info(event='sleep_after_upgrade', length=sleep_after_upgrade)
-        time.sleep(sleep_after_upgrade)
-
-    if no_finish_upgrade is False and response['state'] == 'upgraded':
-        r = requests.post(response['actions']['finishupgrade'], auth=(access, secret), timeout=60, json={})
-        r.raise_for_status()
-        log.info(event='upgraded')
-
-
-def get_launch_config(url, access, secret, project, service, sidekick=None):
-    api_url = f'{url}/v1/projects/{project}/services/{service}'
-
-    r = requests.get(api_url, auth=(access, secret), timeout=60)
-    r.raise_for_status()
-
-    response = json.loads(r.text)
-    if sidekick:
-        return [d for d in response['secondaryLaunchConfigs'] if d['name'] == sidekick]
-    else:
-        return response['launchConfig']
-
+    utils.upgrade(
+        rancher_url, project, service, upgrade_request, sleep_after_upgrade, no_finish_upgrade, log, access, secret
+    )
 
 if __name__ == '__main__':
     main()
