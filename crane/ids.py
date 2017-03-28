@@ -19,7 +19,7 @@ def _service_name_to_id(url, env, access, secret, name, stack):
 
 
 def names_to_ids(rancher_url, env, stack, service, access, secret):
-    if not _is_id(stack):
+    if stack is not None and not _is_id(stack):
         stack = _stack_name_to_id(rancher_url, env, access, secret, stack)
 
     if not _is_id(service):
