@@ -32,7 +32,7 @@ def request_upgrade(service_id, upgrade_request):
         response = rancher.get(service_url, timeout=60)
         response.raise_for_status()
         if response.json()['state'] != 'upgrading':
-            click.echo(f"{service_id}'s state changed to '{response.json()['state']}'.")
+            click.echo(f"Rancher says {service_id} is now '{response.json()['state']}'.")
             return response.json()
 
         time.sleep(3)
@@ -61,7 +61,7 @@ def upgrade(service_id):
     response = request_upgrade(service_id, request)
 
     if settings['sleep_after_upgrade']:
-        click.echo(f'Upgrade of {service_id} done, waiting {settings["sleep_after_upgrade"]}s as requested. (ʃƪ˘･ᴗ･˘)')
+        click.echo(f'Upgrade of {service_id} done, waiting {settings["sleep_after_upgrade"]}s as requested ' + click.style('(ʃƪ˘･ᴗ･˘)', bold=True))
         time.sleep(settings.sleep_after_upgrade)
 
     if not settings['manual_finish'] and response['state'] == 'upgraded':

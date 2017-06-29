@@ -23,10 +23,10 @@ def main(**parsed_settings):
 
     configuration.load_ids()
 
-    click.echo("Alrighty, let's deploy! ᕕ( ᐛ )ᕗ")
+    click.echo("Alrighty, let's deploy! " + click.style('ᕕ( ᐛ )ᕗ', bold=True))
     click.echo('(But please supervise me at {url}/env/{env}/apps/stacks/{stack_id})'.format_map(settings))
 
     for service_id in settings['service_ids']:
         upgrading.upgrade(service_id)
 
-    click.echo('Marked upgrade as finished. Good job, everyone! (◕‿◕✿)')
+    click.echo("…and we're done. Good job, everyone! " + click.style('(◕‿◕✿)', bold=True), color='green')
