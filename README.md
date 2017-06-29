@@ -9,13 +9,12 @@ A GitLab CI ready image for Rancher upgrades.
   - click the `API` button in the environment your app is in, then `Add Environment API key`
   - name it `gitlab/group/project deployment`, or similar
 - Add the secret key as a secret variable in the project (`RANCHER_SECRET_KEY`)
-  - add the `RANCHER_URL`, `RANCHER_ACCESS_KEY`, `RANCHER_PROJECT_ID`, `RANCHER_SERVICE_ID`
+  - add the `RANCHER_URL`, `RANCHER_ACCESS_KEY`, `RANCHER_ENV_ID`, `RANCHER_SERVICE_NAME`
     either in secret variables, or `.gitlab-ci.yml`
   - <https://gitlab.skypicker.com/group/project/variables>
-- Go to your application on Rancher, and note the Project ID / Service ID variables in the URL
+- Go to your application on Rancher, and note the Environment ID in the URL
   - Example URL: <https://example.com/env/1a81/apps/stacks/1e551/services/1s1456/containers>
-    - Project ID: `1a81`, environment ID, starts with `1a`
-    - Service ID: `1s1456`, starts with `1s`
+    — the environment ID is `1a81`, it always starts with `1a`
 - Edit `.gitlab-ci.yml`
 
 
@@ -28,8 +27,8 @@ variables:
   TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   RANCHER_URL: https://example.com/                         # Change to the Rancher URL
   RANCHER_ACCESS_KEY: 9vQ4fcpn4Kfuvjxkcpc9PoudImzxoj6pQxa   # Change to your Rancher access key
-  RANCHER_PROJECT_ID: 1a81                                  # Change to the Project ID of your app
-  RANCHER_SERVICE_ID: 1s1456                                # Change to the Service ID of your app
+  RANCHER_ENV_ID: 1a81                                      # Change to the environment ID of your app
+  RANCHER_SERVICE_NAME: webserver                           # Change to the service ID of your app
 
 [...]
 
