@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='crane',
-    version='0.1.0',
+    version='0.2.0',
     url='https://gitlab.skypicker.com/simone/crane',
     author='Simone Esposito',
     author_email='simone@kiwi.com',
@@ -11,9 +11,10 @@ setup(
     description='GitLab CI + Rancher deployment',
     packages=['crane'],
     install_requires=[
-        'requests<3',
+        'click',
+        'requests',
     ],
-    entry_points={'console_scripts': 'crane=crane:main'},
+    entry_points={'console_scripts': 'crane=crane.cli:main'},
     classifiers=[
         'Development Status :: 4 - Beta',
         'Environment :: Console',

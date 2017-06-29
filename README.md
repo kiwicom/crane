@@ -50,15 +50,16 @@ production:
 
 | CLI flag                | Environment variable        | Required | Default |
 | ----------------------- | --------------------------- | -------- | ------- |
-| `--rancher-url`         | `RANCHER_URL`               | Yes      |         |
-| `--access`              | `RANCHER_ACCESS_KEY`        | Yes      |         |
-| `--secret`              | `RANCHER_SECRET_KEY`        | Yes      |         |
-| `--project`             | `RANCHER_PROJECT_ID`        | Yes      |         |
-| `--service`             | `RANCHER_SERVICE_ID`        | Yes      |         |
-| `--new-image`           | `RANCHER_SERVICE_IMAGE`     | No       | None    |
+| `--url`                 | `RANCHER_URL`               | Yes      |         |
+| `--access-key`          | `RANCHER_ACCESS_KEY`        | Yes      |         |
+| `--secret-key`          | `RANCHER_SECRET_KEY`        | Yes      |         |
+| `--env`                 | `RANCHER_ENV_ID`            | Yes      |         |
+| `--stack`               | `RANCHER_STACK_NAME`        | Yes      |         |
+| `--service`             | `RANCHER_SERVICE_NAME`      | No       | app     |
+| `--sidekick`            | `RANCHER_SIDEKICK_NAME`     | No       | None    |
 | `--batch-size`          | `RANCHER_BATCH_SIZE`        | No       | 1       |
 | `--batch-interval`      | `RANCHER_BATCH_INTERVAL`    | No       | 2       |
 | `--start-first`         | `RANCHER_START_FIRST`       | No       | False   |
-| `--sidekick`            | `RANCHER_SIDEKICK_NAME`     | No       | None    |
-| `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 60      |
-| `--no-finish-upgrade`   | `CRANE_NO_FINISH_UPGRADE`   | No       | False   |
+| `--new-image`           | `CRANE_NEW_IMAGE`           | No       | None    |
+| `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 0       |
+| `--manual-finish`       | `CRANE_MANUAL_FINISH`       | No       | False   |

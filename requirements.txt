@@ -6,5 +6,3 @@
 #
 click==6.7
 requests==2.12.4
-six==1.10.0               # via structlog
-structlog==16.1.0
