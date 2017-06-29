@@ -1,6 +1,6 @@
 import click
 
-from . import configuration, settings, rancher, upgrading
+from . import settings, rancher
 
 
 @click.command()
@@ -19,14 +19,15 @@ from . import configuration, settings, rancher, upgrading
 @click.option('--manual-finish', envvar='CRANE_MANUAL_FINISH', default=False, is_flag=True, help='skip automatic upgrade finish')
 def main(**parsed_settings):
     settings.update(parsed_settings)
-    rancher.auth = settings['access_key'], settings['secret_key']
+    rancher.session.auth = settings['access_key'], settings['secret_key']
 
-    configuration.load_ids()
+    settings['stack'] = rancher.Stack.from_name(settings['stack'])
+    settings['services'] = [rancher.Service.from_name(service) for service in settings['service']]
 
     click.echo("Alrighty, let's deploy! " + click.style('ᕕ( ᐛ )ᕗ', bold=True))
-    click.echo('(But please supervise me at {url}/env/{env}/apps/stacks/{stack_id})'.format_map(settings))
+    click.echo('(But please supervise me at {stack.web_url})'.format_map(settings))
 
-    for service_id in settings['service_ids']:
-        upgrading.upgrade(service_id)
+    for service in settings['services']:
+        service.upgrade()
 
     click.echo("…and we're done. Good job, everyone! " + click.style('(◕‿◕✿)', bold=True), color='green')
