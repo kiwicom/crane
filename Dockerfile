@@ -6,7 +6,8 @@ RUN mkdir /app
 WORKDIR /app
 
 COPY ./requirements.txt /app
-RUN pip install -r requirements.txt
+RUN apk add --no-cache --virtual=.run-deps git &&\
+    pip install -r requirements.txt
 
 COPY . /app
 

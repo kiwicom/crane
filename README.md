@@ -35,8 +35,6 @@ variables:
 production:
   stage: deploy
   image: registry.skypicker.com:5005/simone/crane
-  variables:
-    GIT_STRATEGY: none
   script:
     - crane --new-image $TEST_IMAGE
   environment:

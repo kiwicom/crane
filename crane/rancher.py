@@ -15,6 +15,10 @@ session.mount('http://', _adapter)
 session.mount('https://', _adapter)
 
 
+class UpgradeFailed(Exception):
+    pass
+
+
 @attr.s(frozen=True, slots=True)
 class Entity:
 
@@ -30,6 +34,11 @@ class Entity:
     def log_name(self):
         return click.style(self.name, bold=True)
 
+    @property
+    def json(self):
+        response = session.get(self.api_url, timeout=60)
+        response.raise_for_status()
+        return response.json()
 
 class Stack(Entity):
 
@@ -38,6 +47,10 @@ class Stack(Entity):
     @property
     def web_url(self):
         return f'{settings["url"]}/env/{settings["env"]}/apps/stacks/{self.id}'
+
+    @property
+    def api_url(self):
+        return f'{settings["url"]}/v1/projects/{settings["env"]}/environments/{self.id}'
 
     @classmethod
     def from_name(cls, name):
@@ -76,17 +89,13 @@ class Service(Entity):
 
     @property
     def launch_config(self):
-        response = session.get(self.api_url, timeout=60)
-        response.raise_for_status()
-        return response.json()['launchConfig']
+        return self.json['launchConfig']
 
     @property
     def sidekick_launch_configs(self):
-        response = session.get(self.api_url, timeout=60)
-        response.raise_for_status()
         return {
             config['name']: config
-            for config in response.json()['secondaryLaunchConfigs']
+            for config in self.json['secondaryLaunchConfigs']
         }
 
     def request_upgrade(self, body):
@@ -96,12 +105,13 @@ class Service(Entity):
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
             if ex.response.json()['code'] == 'ActionNotAvailable':
-                click.echo(f"Rancher won't let me upgrade {self.log_name} " + click.style('(◕︿◕✿)', bold=True), err=True)
-                click.echo(f'Please see if the service is upgradeable at {self.web_url}', err=True)
+                click.secho(f"Rancher won't let me upgrade {self.log_name} " + click.style('(◕︿◕✿)', bold=True), err=True, fg='red')
+                click.secho(f'Please see if the service is upgradeable at {self.web_url}', err=True, fg='red')
             else:
-                click.echo(f"Upgrade failed, and I don't know why " + click.style('( •᷄⌓•᷅ )', bold=True), err=True)
-                click.echo(f"Here, maybe you will understand this:\n{json.dumps(ex.response.json(), indent=2)}" , err=True)
-            sys.exit(1)
+                click.secho(f"Upgrade failed, and I don't know why " + click.style('(◍•﹏•)', bold=True), err=True, fg='red')
+                click.secho(f"Here, maybe you will understand this:\n{json.dumps(ex.response.json(), indent=2)}" , err=True, fg='red')
+
+            raise UpgradeFailed()
 
         service_url = response.json()['links']['self']
 
