@@ -143,7 +143,11 @@ class Client:
         session.post(url, data={**self.base_data, **message})
 
     def set_status(self, message, status):
-        env_text = f'<{environ["CI_ENVIRONMENT_URL"]}|{environ["CI_ENVIRONMENT_NAME"]}>'
+        env_text = (
+            f'<{environ["CI_ENVIRONMENT_URL"]}|{environ["CI_ENVIRONMENT_NAME"]}>'
+            if 'CI_ENVIRONMENT_URL' in environ
+            else environ['CI_ENVIRONMENT_NAME']
+        )
         fields = message['attachments'][0]['fields']
         env_lines = fields['Environment'].splitlines()
         for index, line in enumerate(env_lines):
