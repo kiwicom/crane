@@ -106,7 +106,7 @@ class Hook(Base):
         fields['Branch'] = ''
         fields['Releaser'] = ''
         fields['Links'] = ' | '.join((
-            f'<{environ["CI_REGISTRY_IMAGE"]}|Image>',
+            f'<{environ["CI_REGISTRY_IMAGE"]}:{deployment.new_version}|Image>',
             f'<{deployment.stack.web_url}|Stack>',
         ))
 
