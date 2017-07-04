@@ -148,7 +148,7 @@ class Hook(Base):
     def send_reply(self, message_id, text, in_channel=False):
         session.post('https://slack.com/api/chat.postMessage', data={
             **self.base_data,
-            'ts': message_id,
+            'thread_ts': message_id,
             'text': text,
             'reply_broadcast': 'true' if in_channel else 'false',
             'link_names': '1',
@@ -169,8 +169,8 @@ class Hook(Base):
         message = self.get_existing_message() or self.generate_new_message()
         fields = message['attachments'][0]['fields']
 
-        if message['ts']:
-            self.send_reply(message['ts'], f'Releasing also on {self.env_text}.')
+        if 'ts' in message:
+            self.send_reply(message['ts'], f'Starting release on {self.env_text}.')
 
         self.set_status(message, ':spinner:')
 
@@ -189,12 +189,16 @@ class Hook(Base):
 
     def after_upgrade_success(self):
         message = self.get_existing_message()
+        if not message:
+            return  # we didn't even start
         self.set_status(message, ':white_check_mark:')
         self.send_message(message)
         self.send_reply(message['ts'], f'Released on {self.env_text}.')
 
     def after_upgrade_failure(self):
         message = self.get_existing_message()
+        if not message:
+            return  # we didn't even start
         self.set_status(message, ':x:')
         self.send_message(message)
         self.send_reply(message['ts'], f'Release failed on {self.env_text}.', in_channel=True)
