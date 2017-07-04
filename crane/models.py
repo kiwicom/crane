@@ -28,7 +28,7 @@ class Deployment:
 
     @property
     def commits(self):
-        self.repo.iter_commits(self.old_version + '...' + self.new_version)
+        return self.repo.iter_commits(self.old_version + '...' + self.new_version)
 
     @property
     def is_redeploy(self):

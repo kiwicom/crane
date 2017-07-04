@@ -24,6 +24,10 @@ class Base:
         try:
             handler()
         except:
-            click.secho(f'Uh-oh, the {self.__module__} hook failed. Here are the details:\n', fg='yellow', err=True)
+            click.secho(
+                f"Uh-oh, {self.__module__} couldn't handle {event}. Here's the traceback:\n",
+                fg='yellow',
+                err=True,
+            )
             traceback.print_exc()
             click.echo('\nOh well, on with the release! ' + click.style("乁( ◔ ౪◔)ㄏ", bold=True))
