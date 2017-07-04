@@ -146,7 +146,7 @@ class Hook(Base):
         session.post(url, data={**self.base_data, **message, 'link_names': '1'})
 
     def send_reply(self, message_id, text, in_channel=False):
-        session.post(url, data={
+        session.post('https://slack.com/api/chat.postMessage', data={
             **self.base_data,
             'ts': message_id,
             'text': text,
