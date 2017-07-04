@@ -175,7 +175,7 @@ class Hook(Base):
 
     def after_upgrade_failure(self):
         message = self.get_existing_message()
-        self.set_status(message, ':no_entry_sign:')
+        self.set_status(message, ':x:')
         self.send_message(message)
 
     @property
