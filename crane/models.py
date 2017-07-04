@@ -24,12 +24,31 @@ class Deployment:
 
     @property
     def id(self):
-        return self.old_version + self.new_version
+        if not self.is_rollback:
+            return self.old_version + self.new_version
+        else:
+            return self.new_version + self.old_version
+
+    @property
+    def reverse_id(self):
+        return self.new_version + self.old_version
 
     @property
     def commits(self):
-        return self.repo.iter_commits(self.old_version + '...' + self.new_version)
+        return list(self.repo.iter_commits(self.old_version + '...' + self.new_version))
 
     @property
     def is_redeploy(self):
         return self.old_version == self.new_version
+
+    @property
+    def old_commit(self):
+        return self.repo.commit(self.old_version)
+
+    @property
+    def new_commit(self):
+        return self.repo.commit(self.new_version)
+
+    @property
+    def is_rollback(self):
+        return self.new_commit.committed_date < self.old_commit.committed_date
