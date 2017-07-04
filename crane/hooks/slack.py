@@ -130,7 +130,7 @@ class Hook(Base):
     def send_message(self, message):
         fields = message['attachments'][0]['fields']
 
-        if ':no_entry_sign:' in fields['Environment']:
+        if ':x:' in fields['Environment']:
             message['attachments'][0]['color'] = 'danger'
         elif ':spinner:' in fields['Environment']:
             message['attachments'][0].pop('color', None)
