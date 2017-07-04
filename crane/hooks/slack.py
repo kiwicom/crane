@@ -175,7 +175,7 @@ class Hook(Base):
         self.set_status(message, ':spinner:')
 
         releaser = self.users_by_email.get(environ["GITLAB_USER_EMAIL"], environ["GITLAB_USER_EMAIL"])
-        if fields['Releaser'] and releaser not in fields['Releaser']:
+        if fields['Releaser'] and releaser.strip('@') not in fields['Releaser']:
             fields['Releaser'] += ' & ' + releaser
         else:
             fields['Releaser'] = releaser
