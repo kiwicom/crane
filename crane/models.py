@@ -24,10 +24,7 @@ class Deployment:
 
     @property
     def id(self):
-        if not self.is_rollback:
-            return self.old_version + self.new_version
-        else:
-            return self.new_version + self.old_version
+        return self.old_version + self.new_version
 
     @property
     def reverse_id(self):
