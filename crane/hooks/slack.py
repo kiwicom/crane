@@ -145,24 +145,32 @@ class Hook(Base):
             url = 'https://slack.com/api/chat.postMessage'
         session.post(url, data={**self.base_data, **message, 'link_names': '1'})
 
+    def send_reply(self, message_id, text, in_channel=False):
+        session.post(url, data={
+            **self.base_data,
+            'ts': message_id,
+            'text': text,
+            'reply_broadcast': 'true' if in_channel else 'false',
+            'link_names': '1',
+        })
+
     def set_status(self, message, status):
-        env_text = (
-            f'<{environ["CI_ENVIRONMENT_URL"]}|{environ["CI_ENVIRONMENT_NAME"]}>'
-            if 'CI_ENVIRONMENT_URL' in environ
-            else environ['CI_ENVIRONMENT_NAME']
-        )
         fields = message['attachments'][0]['fields']
         env_lines = fields['Environment'].splitlines()
         for index, line in enumerate(env_lines):
-            if line.startswith(env_text):
-                env_lines[index] = env_text + ' ' + status
+            if line.startswith(self.env_text):
+                env_lines[index] = self.env_text + ' ' + status
                 break
         else:
-            env_lines.append(env_text + ' ' + status)
+            env_lines.append(self.env_text + ' ' + status)
         fields['Environment'] = '\n'.join(env_lines)
 
     def before_upgrade(self):
         message = self.get_existing_message() or self.generate_new_message()
+
+        if message['ts']:
+            self.send_reply(message['ts'], f'Releasing also on {self.env_text}.')
+
         self.set_status(message, ':spinner:')
         message['attachments'][0]['fields']['Releaser'] = self.users_by_email.get(
             environ["GITLAB_USER_EMAIL"], environ["GITLAB_USER_EMAIL"]
@@ -177,12 +185,21 @@ class Hook(Base):
         message = self.get_existing_message()
         self.set_status(message, ':white_check_mark:')
         self.send_message(message)
+        self.send_reply(message['ts'], f'Released on {self.env_text}.')
 
     def after_upgrade_failure(self):
         message = self.get_existing_message()
         self.set_status(message, ':x:')
         self.send_message(message)
+        self.send_reply(message['ts'], f'Release failed on {self.env_text}.', in_channel=True)
 
     @property
     def is_active(self):
         return 'slack_token' in settings and 'slack_channel' in settings
+
+    @property
+    def env_text(self):
+        if 'CI_ENVIRONMENT_URL' in environ:
+            return f'<{environ["CI_ENVIRONMENT_URL"]}|{environ["CI_ENVIRONMENT_NAME"]}>'
+        else:
+            return environ['CI_ENVIRONMENT_NAME']
