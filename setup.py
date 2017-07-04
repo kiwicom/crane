@@ -4,10 +4,10 @@ from setuptools import setup, find_packages
 setup(
     name='crane',
     version='0.2.0',
-    url='https://gitlab.skypicker.com/simone/crane',
-    author='Simone Esposito',
-    author_email='simone@kiwi.com',
-    download_url='https://gitlab.skypicker.com/simone/crane',
+    url='https://gitlab.skypicker.com/bence/crane',
+    author='Bence Nagy',
+    author_email='bece@kiwi.com',
+    download_url='https://gitlab.skypicker.com/bence/crane',
     description='GitLab CI + Rancher deployment',
     packages=find_packages(),
     install_requires=[

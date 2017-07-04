@@ -1,6 +1,4 @@
-FROM python:3-alpine
-
-MAINTAINER Simone Esposito <simone@kiwi.com>
+FROM python:3.6-alpine
 
 RUN mkdir /app
 WORKDIR /app

@@ -34,7 +34,7 @@ variables:
 
 production:
   stage: deploy
-  image: registry.skypicker.com:5005/simone/crane
+  image: registry.skypicker.com:5005/bence/crane
   script:
     - crane --new-image $TEST_IMAGE
   environment:
