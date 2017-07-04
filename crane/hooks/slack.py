@@ -167,18 +167,24 @@ class Hook(Base):
 
     def before_upgrade(self):
         message = self.get_existing_message() or self.generate_new_message()
+        fields = message['attachments'][0]['fields']
 
         if message['ts']:
             self.send_reply(message['ts'], f'Releasing also on {self.env_text}.')
 
         self.set_status(message, ':spinner:')
-        message['attachments'][0]['fields']['Releaser'] = self.users_by_email.get(
-            environ["GITLAB_USER_EMAIL"], environ["GITLAB_USER_EMAIL"]
-        )
-        message['attachments'][0]['fields']['Branch'] = (
+
+        releaser = self.users_by_email.get(environ["GITLAB_USER_EMAIL"], environ["GITLAB_USER_EMAIL"])
+        if fields['Releaser'] and releaser not in fields['Releaser']:
+            fields['Releaser'] += ' & ' + releaser
+        else:
+            fields['Releaser'] = releaser
+
+        fields['Branch'] = (
             (':warning: ' if environ['CI_COMMIT_REF_NAME'] != 'master' else '')
             + f'<{environ["CI_PROJECT_URL"]}/tree/{environ["CI_COMMIT_REF_NAME"]}|{environ["CI_COMMIT_REF_NAME"]}>'
         )
+
         self.send_message(message)
 
     def after_upgrade_success(self):
