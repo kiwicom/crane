@@ -143,7 +143,7 @@ class Hook(Base):
             message['parse'] = True
         else:
             url = 'https://slack.com/api/chat.postMessage'
-        session.post(url, data={**self.base_data, **message, 'parse': 'full'})
+        session.post(url, data={**self.base_data, **message, 'link_names': '1'})
 
     def set_status(self, message, status):
         env_text = (
