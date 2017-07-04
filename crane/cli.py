@@ -25,6 +25,9 @@ from . import deployment, hooks, rancher, settings
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
 @click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
 def main(**parsed_settings):
+    click_context = click.get_current_context()
+    click_context.color = True  # GitLab doesn't report terminal type correctly so we need to force it
+
     settings.update(parsed_settings)
     rancher.session.auth = settings['access_key'], settings['secret_key']
     deployment.load_from_settings(settings)
