@@ -1,8 +1,11 @@
+from os import environ
 import sys
 
 import click
+import crane
+import git
 
-from . import rancher, settings, slack
+from . import deployment, hooks, rancher, settings
 
 
 @click.command()
@@ -24,24 +27,17 @@ from . import rancher, settings, slack
 def main(**parsed_settings):
     settings.update(parsed_settings)
     rancher.session.auth = settings['access_key'], settings['secret_key']
+    deployment.load_from_settings(settings)
 
-    settings['stack'] = rancher.Stack.from_name(settings['stack'])
-    settings['services'] = [rancher.Service.from_name(service) for service in settings['service']]
-    settings['old_image'] = settings['services'][0].json['launchConfig']['imageUuid']
-    slack_client = slack.Client()
-
-    click.echo("Alrighty, let's deploy! " + click.style('ᕕ( ᐛ )ᕗ', bold=True))
-    click.echo('(But please supervise me at {stack.web_url})'.format_map(settings))
-    slack_client.before_upgrade()
+    hooks.dispatch('before_upgrade')
 
     try:
-        for service in settings['services']:
+        for service in deployment.services:
             service.upgrade()
     except Exception as ex:
-        slack_client.after_upgrade_failure()
+        hooks.dispatch('after_upgrade_failure')
         if isinstance(ex, rancher.UpgradeFailed):
             return  # we handled it gracefully already
         raise
     else:
-        slack_client.after_upgrade_success()
-        click.secho("…and we're done. Good job, everyone! " + click.style('(◕‿◕✿)', bold=True), fg='green')
+        hooks.dispatch('after_upgrade_success')

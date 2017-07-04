@@ -40,6 +40,8 @@ class Entity:
         response.raise_for_status()
         return response.json()
 
+
+@attr.s
 class Stack(Entity):
 
     ID_PATTERN = re.compile('[0-9]st[0-9]+')
@@ -63,25 +65,25 @@ class Stack(Entity):
 
         return cls(stack_info['id'].replace('1e', '1st'), stack_info['name'])
 
-
-class Service(Entity):
-
-    ID_PATTERN = re.compile('[0-9]s[0-9]+')
-
-    @classmethod
-    def from_name(cls, name):
+    def service_from_name(self, name):
         response = session.get(
             '{url}/v1/projects/{env}/services'.format_map(settings),
-            params={'name': name, 'stackId': settings['stack'].id},
+            params={'name': name, 'stackId': self.id},
         )
         response.raise_for_status()
         service_info = response.json()['data'][0]
+        return Service(service_info['id'], service_info['name'], self)
 
-        return cls(service_info['id'], service_info['name'])
+
+@attr.s
+class Service(Entity):
+
+    ID_PATTERN = re.compile('[0-9]s[0-9]+')
+    stack = attr.ib(validator=attr.validators.instance_of(Stack))
 
     @property
     def web_url(self):
-        return f'{settings["stack"].web_url}/services/{self.id}/containers'
+        return f'{self.stack.web_url}/services/{self.id}/containers'
 
     @property
     def api_url(self):

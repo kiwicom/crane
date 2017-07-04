@@ -5,7 +5,8 @@ from os import environ
 import git
 import requests
 
-from . import settings
+from .base import Base
+from .. import deployment, settings
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=5, max_retries=3)
@@ -57,7 +58,7 @@ class AttachmentFields(UserList):
         raise TypeError()
 
 
-class Client:
+class Hook(Base):
 
     def __init__(self):
         self.token = settings['slack_token']
@@ -69,14 +70,12 @@ class Client:
             channel['name']: channel['id']
             for channel in session.get('https://slack.com/api/channels.list', params={'token': self.token}).json()['channels']
         }
-        self.channel_id = self.channels_by_name[settings['slack_channel']]
-        self.old_sha = settings['old_image'].split(':')[-1]
-        self.new_sha = settings['new_image'].split(':')[-1]
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
         # Ridiculous.
-        self.deployment_id = f'<{self.old_sha}{self.new_sha}.com| >'
+        self.deployment_text = f'<{deployment.id}.com| >'
+        self.channel_id = self.channels_by_name[settings['slack_channel']]
 
     @property
     def base_data(self):
@@ -86,19 +85,18 @@ class Client:
         response = session.get('https://slack.com/api/channels.history', params=self.base_data)
         messages = response.json()['messages']
         for message in messages:
-            if message.get('text') == self.deployment_id:
+            if message.get('text') == self.deployment_text:
                 message['attachments'][0]['fields'] = AttachmentFields(message['attachments'][0]['fields'])
                 return message
 
     def get_changelog(self):
-        repo = git.Repo(environ['CI_PROJECT_DIR'])
-        if self.old_sha == self.new_sha:
+        if deployment.is_redeploy:
             return 'Re-deploy without changes.'
         return '\n'.join(
             (
                 f'<{environ["CI_PROJECT_URL"]}/commit/{commit.hexsha}|{commit.summary}> '
                 f'by {self.users_by_email.get(commit.author.email, commit.author.name)}'
-            ) for commit in repo.iter_commits(self.old_sha + '...' + self.new_sha)
+            ) for commit in deployment.commits
         )
 
     def generate_new_message(self):
@@ -109,12 +107,12 @@ class Client:
         fields['Releaser'] = ''
         fields['Links'] = ' | '.join((
             f'<{environ["CI_REGISTRY_IMAGE"]}|Image>',
-            f'<{settings["stack"].web_url}|Stack>',
+            f'<{deployment.stack.web_url}|Stack>',
         ))
 
         return {
             'link_names': True,
-            'text': self.deployment_id,
+            'text': self.deployment_text,
             'attachments': [{
                 'fallback': f'{environ["CI_PROJECT_PATH"]} release',
                 'title': f'{environ["CI_PROJECT_PATH"]} release',
@@ -179,3 +177,7 @@ class Client:
         message = self.get_existing_message()
         self.set_status(message, ':no_entry_sign:')
         self.send_message(message)
+
+    @property
+    def is_active(self):
+        return 'slack_token' in settings and 'slack_channel' in settings
