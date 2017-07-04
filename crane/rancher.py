@@ -1,3 +1,4 @@
+import json
 import re
 import sys
 import time
@@ -34,14 +35,13 @@ class Entity:
     def log_name(self):
         return click.style(self.name, bold=True)
 
-    @property
     def json(self):
         response = session.get(self.api_url, timeout=60)
         response.raise_for_status()
         return response.json()
 
 
-@attr.s
+@attr.s(frozen=True, slots=True)
 class Stack(Entity):
 
     ID_PATTERN = re.compile('[0-9]st[0-9]+')
@@ -75,7 +75,7 @@ class Stack(Entity):
         return Service(service_info['id'], service_info['name'], self)
 
 
-@attr.s
+@attr.s(frozen=True, slots=True)
 class Service(Entity):
 
     ID_PATTERN = re.compile('[0-9]s[0-9]+')
@@ -91,18 +91,37 @@ class Service(Entity):
 
     @property
     def launch_config(self):
-        return self.json['launchConfig']
+        return self.json()['launchConfig']
 
     @property
     def sidekick_launch_configs(self):
         return {
             config['name']: config
-            for config in self.json['secondaryLaunchConfigs']
+            for config in self.json()['secondaryLaunchConfigs']
         }
 
-    def request_upgrade(self, body):
+    def start_upgrade(self):
+        payload = {
+            'inServiceStrategy': {
+                'batchSize': settings['batch_size'],
+                'intervalMillis': settings['batch_interval'] * 1000,
+                'startFirst': settings['start_first'],
+                'launchConfig': None,
+                'secondaryLaunchConfigs': []
+            }
+        }
+
+        if not settings['sidekick']:
+            launch_config = payload['inServiceStrategy']['launchConfig'] = self.launch_config
+        else:
+            launch_config = self.sidekick_launch_configs[settings['sidekick']]
+            payload['inServiceStrategy']['secondaryLaunchConfigs'].append(launch_config)
+
+        if settings['new_image']:
+            launch_config['imageUuid'] = 'docker:{new_image}'.format_map(settings)
+
         click.echo(f'Upgrading {self.log_name}…')
-        response = session.post(self.api_url, params={'action': 'upgrade'}, json=body, timeout=60)
+        response = session.post(self.api_url, params={'action': 'upgrade'}, json=payload, timeout=60)
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
@@ -115,44 +134,7 @@ class Service(Entity):
 
             raise UpgradeFailed()
 
-        service_url = response.json()['links']['self']
-
-        while True:
-            response = session.get(service_url, timeout=60)
-            response.raise_for_status()
-            if response.json()['state'] != 'upgrading':
-                click.echo(f"Rancher says {self.log_name} is now '{response.json()['state']}'.")
-                return response.json()
-
-            time.sleep(3)
-
-    def upgrade(self):
-        request = {
-            'inServiceStrategy': {
-                'batchSize': settings['batch_size'],
-                'intervalMillis': settings['batch_interval'] * 1000,
-                'startFirst': settings['start_first'],
-                'launchConfig': None,
-                'secondaryLaunchConfigs': []
-            }
-        }
-
-        if not settings['sidekick']:
-            launch_config = request['inServiceStrategy']['launchConfig'] = self.launch_config
-        else:
-            launch_config = self.sidekick_launch_configs[settings['sidekick']]
-            request['inServiceStrategy']['secondaryLaunchConfigs'].append(launch_config)
-
-        if settings['new_image']:
-            launch_config['imageUuid'] = 'docker:{new_image}'.format_map(settings)
-
-        response = self.request_upgrade(request)
-
-        if settings['sleep_after_upgrade']:
-            click.echo(f'Upgrade of {self.log_name} done, waiting {settings["sleep_after_upgrade"]}s as requested ' + click.style('(ʃƪ˘･ᴗ･˘)', bold=True))
-            time.sleep(settings['sleep_after_upgrade'])
-
-        if not settings['manual_finish'] and response['state'] == 'upgraded':
-            response = session.post(response['actions']['finishupgrade'], timeout=60, json={})
-            response.raise_for_status()
-            click.echo(f'Marked upgrade of {self.log_name} as finished in Rancher.')
+    def finish_upgrade(self):
+        response = session.post(self.api_url, params={'action': 'finishupgrade'}, timeout=60, json={})
+        response.raise_for_status()
+        click.echo(f'Marked upgrade of {self.log_name} as finished in Rancher.')

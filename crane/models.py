@@ -19,7 +19,7 @@ class Deployment:
         self.services = [self.stack.service_from_name(service) for service in settings['service']]
 
         self.repo = git.Repo(environ['CI_PROJECT_DIR'])
-        self.old_version = self.services[0].json['launchConfig']['imageUuid'].split(':')[-1]
+        self.old_version = self.services[0].json()['launchConfig']['imageUuid'].split(':')[-1]
         self.new_version = settings['new_image'].split(':')[-1]
 
     @property

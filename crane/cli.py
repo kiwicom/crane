@@ -1,5 +1,6 @@
 from os import environ
 import sys
+import time
 
 import click
 import crane
@@ -36,7 +37,35 @@ def main(**parsed_settings):
 
     try:
         for service in deployment.services:
-            service.upgrade()
+            service.start_upgrade()
+
+        done = set()
+        while done != set(deployment.services):
+            time.sleep(3)
+            for service in set(deployment.services) - done:
+                service_json = service.json()
+                if service_json['state'] != 'upgrading':
+                    click.echo(f"Rancher says {service.log_name} is now '{service_json['state']}'.")
+                    done.add(service)
+                    if service_json['state'] != 'upgraded':
+                        click.secho(
+                            f"But I don't know what {service.log_name}'s '{service_json['state']}' state means! "
+                            + 'Please fix it for me ' + click.style('(´;︵;`)', bold=True),
+                            fg='red',
+                            err=True
+                        )
+                        raise rancher.UpgradeFailed()
+
+        if settings['sleep_after_upgrade']:
+            click.echo(
+                f'Upgrade done, waiting {settings["sleep_after_upgrade"]}s as requested '
+                + click.style('(ʃƪ˘･ᴗ･˘)', bold=True)
+            )
+            time.sleep(settings['sleep_after_upgrade'])
+
+        if not settings['manual_finish']:
+            for service in deployment.services:
+                service.finish_upgrade()
     except Exception as ex:
         hooks.dispatch('after_upgrade_failure')
         if isinstance(ex, rancher.UpgradeFailed):
