@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 
 
 setup(
@@ -9,7 +9,7 @@ setup(
     author_email='simone@kiwi.com',
     download_url='https://gitlab.skypicker.com/simone/crane',
     description='GitLab CI + Rancher deployment',
-    packages=['crane'],
+    packages=find_packages(),
     install_requires=[
         'click',
         'requests',
