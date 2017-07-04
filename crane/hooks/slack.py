@@ -92,7 +92,12 @@ class Hook(Base):
     def get_changelog(self):
         if deployment.is_redeploy:
             return 'Re-deploy without changes.'
-        return '\n'.join(
+
+        prefix = ''
+        if deployment.is_rollback:
+            prefix = ':warning: Rolling back the following changes:\n'
+
+        return prefix + '\n'.join(
             (
                 f'<{environ["CI_PROJECT_URL"]}/commit/{commit.hexsha}|{commit.summary}> '
                 f'by {self.users_by_email.get(commit.author.email, commit.author.name)}'
