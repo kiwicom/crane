@@ -110,10 +110,7 @@ class Hook(Base):
         fields['Environment'] = ''
         fields['Branch'] = ''
         fields['Releaser'] = ''
-        fields['Links'] = ' | '.join((
-            f'<{environ["CI_REGISTRY_IMAGE"]}:{deployment.new_version}|Image>',
-            f'<{deployment.stack.web_url}|Stack>',
-        ))
+        fields['Links'] = self.links_text
 
         return {
             'link_names': True,
@@ -213,3 +210,12 @@ class Hook(Base):
             return f'<{environ["CI_ENVIRONMENT_URL"]}|{environ["CI_ENVIRONMENT_NAME"]}>'
         else:
             return environ['CI_ENVIRONMENT_NAME']
+
+    @property
+    def links_text(self):
+        links = {
+            'Image': f'{environ["CI_REGISTRY_IMAGE"]}:{deployment.new_version}',
+            'Stack': deployment.stack.web_url,
+            **dict(settings['slack_link']),
+        }
+        return ' | '.join(f'<{url}|{title}>' for title, url in links.items())

@@ -25,6 +25,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--manual-finish', envvar='CRANE_MANUAL_FINISH', default=False, is_flag=True, help='skip automatic upgrade finish')
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
 @click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
+@click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
 def main(**parsed_settings):
     click_context = click.get_current_context()
     click_context.color = True  # GitLab doesn't report terminal type correctly so we need to force it
