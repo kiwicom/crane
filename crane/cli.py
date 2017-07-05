@@ -26,6 +26,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
 @click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
 @click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
+@click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL')
 def main(**parsed_settings):
     click_context = click.get_current_context()
     click_context.color = True  # GitLab doesn't report terminal type correctly so we need to force it

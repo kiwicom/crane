@@ -1,6 +1,6 @@
-from . import echo, slack
+from . import echo, sentry, slack
 
-AVAILABLE_HOOKS = [echo, slack]
+AVAILABLE_HOOKS = [echo, sentry, slack]
 
 HOOKS = []
 
