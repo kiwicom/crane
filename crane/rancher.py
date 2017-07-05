@@ -1,4 +1,3 @@
-import json
 import re
 import sys
 import time
@@ -125,12 +124,16 @@ class Service(Entity):
         try:
             response.raise_for_status()
         except requests.exceptions.HTTPError as ex:
-            if ex.response.json()['code'] == 'ActionNotAvailable':
+            try:
+                response_payload = ex.response.json()
+            except:
+                response_payload = None
+            if response_payload and response_payload.get('code') == 'ActionNotAvailable':
                 click.secho(f"Rancher won't let me upgrade {self.log_name} " + click.style('(◕︿◕✿)', bold=True), err=True, fg='red')
                 click.secho(f'Please see if the service is upgradeable at {self.web_url}', err=True, fg='red')
             else:
                 click.secho(f"Upgrade failed, and I don't know why " + click.style('(◍•﹏•)', bold=True), err=True, fg='red')
-                click.secho(f"Here, maybe you will understand this:\n{json.dumps(ex.response.json(), indent=2)}" , err=True, fg='red')
+                click.secho(f"Here, maybe you will understand this:\n{ex.response.text}" , err=True, fg='red')
 
             raise UpgradeFailed()
 
