@@ -202,7 +202,7 @@ class Hook(Base):
 
     @property
     def is_active(self):
-        return 'slack_token' in settings and 'slack_channel' in settings
+        return settings.get('slack_token') and settings.get('slack_channel')
 
     @property
     def env_text(self):
