@@ -60,3 +60,27 @@ production:
 | `--new-image`           | `CRANE_NEW_IMAGE`           | No       | None    |
 | `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 0       |
 | `--manual-finish`       | `CRANE_MANUAL_FINISH`       | No       | False   |
+
+## Integrations and extensions
+
+# Slack
+
+When `--slack-token` is defined, Crane can post an announcement to `--slack-channel` with details about
+the latest deployment. The announcement can contains useful links `--slack-link` to other services such
+as Datadog, Sentry or project repository.
+
+| CLI flag          | Environment variable  | Details                      |
+| ----------------- | --------------------- | ---------------------------- |
+| `--slack-token`   | `CRANE_SLACK_TOKEN`   | Slack API token              |
+| `--slack-channel` | `CRANE_SLACK_CHANNEL` | Slack channel to announce in |
+| `--slack-link`    | `CRANE_SLACK_LINK`    | links to mention in Slack    |
+
+# Sentry
+
+With sentry integration `--sentry-webhook`, Crane update release details in Sentry.
+[Release tracking](https://docs.sentry.io/learn/releases/#what-is-a-release) is useful to provide additional context
+to errors tracked in Sentry.
+
+| CLI flag           | Environment variable   | Details                    |
+| ------------------ | ---------------------- | -------------------------- |
+| `--sentry-webhook` | `CRANE_SENTRY_WEBHOOK` | Sentry release webhook URL |
