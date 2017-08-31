@@ -33,4 +33,4 @@ class Hook(Base):
 
     @property
     def is_active(self):
-        return settings.get('sentry_webhook')
+        return bool(settings.get('sentry_webhook'))

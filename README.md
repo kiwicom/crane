@@ -84,3 +84,17 @@ to errors tracked in Sentry.
 | CLI flag           | Environment variable   | Details                    |
 | ------------------ | ---------------------- | -------------------------- |
 | `--sentry-webhook` | `CRANE_SENTRY_WEBHOOK` | Sentry release webhook URL |
+
+# Generic webhooks
+
+With the `--webhook-url` option,
+you can specify URLs that Crane will send release info to,
+in its own format.
+One use for this is for analytics;
+if somebody sets up a listener for these events,
+they'll have the data needed to identify correlations
+between releases and changes in user behavior or sales numbers.
+
+| CLI flag        | Environment variable | Details                      |
+| --------------- | -------------------- | ---------------------------- |
+| `--webhook-url` | `CRANE_WEBHOOK_URL`  | URLs to post release info to |
