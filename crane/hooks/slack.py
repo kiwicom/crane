@@ -62,20 +62,22 @@ class Hook(Base):
 
     def __init__(self):
         self.token = settings['slack_token']
-        self.users_by_email = {
-            user['profile'].get('email'): '@' + user['name']
-            for user in session.get('https://slack.com/api/users.list', params={'token': self.token}).json()['members']
-        }
-        self.channels_by_name = {
-            channel['name']: channel['id']
-            for channel in session.get('https://slack.com/api/channels.list', params={'token': self.token}).json()['channels']
-        }
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
         # Ridiculous.
         self.deployment_text = f'<{deployment.id}.com| >'
-        self.channel_id = self.channels_by_name[settings['slack_channel']]
+
+        if self.token:
+            self.users_by_email = {
+                user['profile'].get('email'): '@' + user['name']
+                for user in session.get('https://slack.com/api/users.list', params={'token': self.token}).json()['members']
+            }
+            self.channels_by_name = {
+                channel['name']: channel['id']
+                for channel in session.get('https://slack.com/api/channels.list', params={'token': self.token}).json()['channels']
+            }
+            self.channel_id = self.channels_by_name[settings['slack_channel']]
 
     @property
     def base_data(self):
