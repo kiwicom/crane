@@ -85,6 +85,7 @@ if somebody sets up a listener for these events,
 they'll have the data needed to identify correlations
 between releases and changes in user behavior or sales numbers.
 
-| CLI flag        | Environment variable | Details                      |
-| --------------- | -------------------- | ---------------------------- |
-| `--webhook-url` | `CRANE_WEBHOOK_URL`  | URLs to post release info to |
+| CLI flag          | Environment variable  | Details                      |
+| ----------------- | --------------------- | ---------------------------- |
+| `--webhook-url`   | `CRANE_WEBHOOK_URL`   | URLs to post release info to |
+| `--webhook-token` | `CRANE_WEBHOOK_TOKEN` | Auth token for webhooks      |
