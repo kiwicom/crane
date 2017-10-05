@@ -1,14 +1,14 @@
-from os import environ
-import sys
 import time
 
 import click
-import crane
 import git
+
+import crane
 
 from . import deployment, hooks, rancher, settings
 
 
+# start ignoring LineLengthBear
 @click.command()
 @click.option('--rancher-url', '--url', envvar='RANCHER_URL', required=True, help='Rancher API URL')
 @click.option('--access', '--access-key', envvar='RANCHER_ACCESS_KEY', required=True, help='Rancher access key')
@@ -28,6 +28,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
 @click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL')
 @click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to')
+# stop ignoring LineLengthBear
 def main(**parsed_settings):
     click_context = click.get_current_context()
     click_context.color = True  # GitLab doesn't report terminal type correctly so we need to force it
@@ -39,36 +40,7 @@ def main(**parsed_settings):
     hooks.dispatch('before_upgrade')
 
     try:
-        for service in deployment.services:
-            service.start_upgrade()
-
-        done = set()
-        while done != set(deployment.services):
-            time.sleep(3)
-            for service in set(deployment.services) - done:
-                service_json = service.json()
-                if service_json['state'] != 'upgrading':
-                    click.echo(f"Rancher says {service.log_name} is now '{service_json['state']}'.")
-                    done.add(service)
-                    if service_json['state'] != 'upgraded':
-                        click.secho(
-                            f"But I don't know what {service.log_name}'s '{service_json['state']}' state means! "
-                            + 'Please fix it for me ' + click.style('(´;︵;`)', bold=True),
-                            fg='red',
-                            err=True
-                        )
-                        raise rancher.UpgradeFailed()
-
-        if settings['sleep_after_upgrade']:
-            click.echo(
-                f'Upgrade done, waiting {settings["sleep_after_upgrade"]}s as requested '
-                + click.style('(ʃƪ˘･ᴗ･˘)', bold=True)
-            )
-            time.sleep(settings['sleep_after_upgrade'])
-
-        if not settings['manual_finish']:
-            for service in deployment.services:
-                service.finish_upgrade()
+        upgrade()
     except Exception as ex:
         hooks.dispatch('after_upgrade_failure')
         if isinstance(ex, rancher.UpgradeFailed):
@@ -76,3 +48,36 @@ def main(**parsed_settings):
         raise
     else:
         hooks.dispatch('after_upgrade_success')
+
+
+def upgrade():
+    for service in deployment.services:
+        service.start_upgrade()
+
+    done = set()
+    while done != set(deployment.services):
+        time.sleep(3)
+        for service in set(deployment.services) - done:
+            service_json = service.json()
+            if service_json['state'] != 'upgrading':
+                click.echo(f"Rancher says {service.log_name} is now '{service_json['state']}'.")
+                done.add(service)
+                if service_json['state'] != 'upgraded':
+                    click.secho(
+                        f"But I don't know what {service.log_name}'s '{service_json['state']}' state means! "
+                        + 'Please fix it for me ' + click.style('(´;︵;`)', bold=True),
+                        fg='red',
+                        err=True,
+                    )
+                    raise rancher.UpgradeFailed()
+
+    if settings['sleep_after_upgrade']:
+        click.echo(
+            f'Upgrade done, waiting {settings["sleep_after_upgrade"]}s as requested '
+            + click.style('(ʃƪ˘･ᴗ･˘)', bold=True)
+        )
+        time.sleep(settings['sleep_after_upgrade'])
+
+    if not settings['manual_finish']:
+        for service in deployment.services:
+            service.finish_upgrade()

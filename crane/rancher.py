@@ -1,13 +1,10 @@
 import re
-import sys
-import time
 
 import attr
 import click
 import requests
 
 from . import settings
-
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=5, max_retries=3)
@@ -128,12 +125,21 @@ class Service(Entity):
                 response_payload = ex.response.json()
             except:
                 response_payload = None
+
             if response_payload and response_payload.get('code') == 'ActionNotAvailable':
-                click.secho(f"Rancher won't let me upgrade {self.log_name} " + click.style('(◕︿◕✿)', bold=True), err=True, fg='red')
-                click.secho(f'Please see if the service is upgradeable at {self.web_url}', err=True, fg='red')
+                message = (
+                    f"Rancher won't let me upgrade {self.log_name} "
+                    + click.style('(◕︿◕✿)', bold=True)
+                    + f'\n\nPlease see if the service is upgradeable at {self.web_url}'
+                )
             else:
-                click.secho(f"Upgrade failed, and I don't know why " + click.style('(◍•﹏•)', bold=True), err=True, fg='red')
-                click.secho(f"Here, maybe you will understand this:\n{ex.response.text}" , err=True, fg='red')
+                message = (
+                    f"Upgrade failed, and I don't know why "
+                    + click.style('(◍•﹏•)', bold=True)
+                    + f'\n\nHere, maybe you will understand this:\n{ex.response.text}'
+                )
+
+            click.secho(message, err=True, fg='red')
 
             raise UpgradeFailed()
 

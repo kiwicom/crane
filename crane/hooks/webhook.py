@@ -1,9 +1,10 @@
 from datetime import datetime
 from os import environ
+
 import requests
 
-from .base import Base
 from .. import deployment, settings
+from .base import Base
 
 
 class Hook(Base):

@@ -1,9 +1,10 @@
 from datetime import datetime
 from os import environ
+
 import requests
 
-from .base import Base
 from .. import deployment, settings
+from .base import Base
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=5, max_retries=3)

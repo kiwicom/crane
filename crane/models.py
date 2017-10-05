@@ -1,6 +1,7 @@
+from os import environ
+
 import attr
 import git
-from os import environ
 
 
 @attr.s(slots=True)

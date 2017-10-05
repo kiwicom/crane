@@ -15,21 +15,21 @@ A GitLab CI ready image to upgrade services in Rancher.
    the environment ID is `1a81`. This ID always starts with `1a`.)
 4. Add something like this to your `.gitlab-ci.yml`:
 
-    ```yaml
-    stages:
-    # [...]
-    - deploy
+   ```yaml
+   stages:
+     # [...]
+     - deploy
 
-    deploy-production:
-      stage: deploy
-      image: kiwicom/crane
-      script:
-        - crane --stack my-app --service api --service worker --new-image $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-      environment:
-        name: production
-        url: https://my-app.example.com/
-      when: manual
-    ```
+   deploy-production:
+     stage: deploy
+     image: kiwicom/crane
+     script:
+       - crane --stack my-app --service api --service worker --new-image $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+     environment:
+       name: production
+       url: https://my-app.example.com/
+     when: manual
+   ```
 
 ## Settings
 

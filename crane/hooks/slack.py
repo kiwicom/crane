@@ -5,8 +5,8 @@ from os import environ
 import git
 import requests
 
-from .base import Base
 from .. import deployment, settings
+from .base import Base
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=5, max_retries=3)
@@ -69,13 +69,15 @@ class Hook(Base):
         self.deployment_text = f'<{deployment.id}.com| >'
 
         if self.token:
+            users_response = session.get('https://slack.com/api/users.list', params={'token': self.token})
             self.users_by_email = {
                 user['profile'].get('email'): '@' + user['name']
-                for user in session.get('https://slack.com/api/users.list', params={'token': self.token}).json()['members']
+                for user in users_response.json()['members']
             }
+            channels_response = session.get('https://slack.com/api/channels.list', params={'token': self.token})
             self.channels_by_name = {
                 channel['name']: channel['id']
-                for channel in session.get('https://slack.com/api/channels.list', params={'token': self.token}).json()['channels']
+                for channel in channels_response.json()['channels']
             }
             self.channel_id = self.channels_by_name[settings['slack_channel']]
 

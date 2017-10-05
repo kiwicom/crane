@@ -1,7 +1,7 @@
 ---
 stages:
- - build
- - release
+  - build
+  - release
 
 variables:
   IMAGE_LABELS: >
@@ -12,55 +12,55 @@ variables:
     --label com.skypicker.gitlab.ci.build=$CI_PROJECT_URL/builds/$CI_BUILD_ID
 
 before_script:
- - export CI_BUILD_REF_SLUG=${CI_BUILD_REF_NAME/\//-}
+  - export CI_BUILD_REF_SLUG=${CI_BUILD_REF_NAME/\//-}
 
 static-analysis:
   stage: build
-  image: coala/base:0.8
+  image: coala/base:0.11
   script:
-   - coala-ci
+    - coala --non-interactive
 
 build:
   stage: build
   image: docker:1.12
   script:
-   - >
-    docker build .
-    --label build-date=`date -Iseconds`
-    $IMAGE_LABELS
-    --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-    --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
-   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+    - >
+      docker build .
+      --label build-date=`date -Iseconds`
+      $IMAGE_LABELS
+      --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+      --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
 
 release-tag:
   stage: release
   image: docker:1.12
   script:
-   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-   - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-   - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
-   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+    - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
   only:
-   - tags
+    - tags
 
 release-branch:
   stage: release
   image: docker:1.12
   script:
-   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-   - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-   - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
-   - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+    - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
 
 release-latest:
   stage: release
   image: docker:1.12
   script:
-   - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
-   - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-   - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:latest
-   - docker push $CI_REGISTRY_IMAGE:latest
+    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+    - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
   only:
-   - master
+    - master
