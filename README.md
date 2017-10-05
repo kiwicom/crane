@@ -6,25 +6,30 @@ A GitLab CI ready image to upgrade services in Rancher.
 
 1. Deploy your application on Rancher manually,
    with a commit SHA tagged image.
-2. Get a Rancher Environment API key and add the API keypair as secret variables in the project, named `RANCHER_ACCESS_KEY` and `RANCHER_SECRET_KEY`.
-3. Also add `RANCHER_URL` and `RANCHER_ENV_ID`, preferably in secret variables, or in `.gitlab-ci.yml`. (In the example URL https://rancher.example.com/env/1a81/apps/stacks/1e551/services/1s1456/containers the environment ID is `1a81`. This ID always starts with `1a`.)
+2. Get a Rancher Environment API key
+   and add the API keypair as secret variables in the project,
+   named `RANCHER_ACCESS_KEY` and `RANCHER_SECRET_KEY`.
+3. Also add `RANCHER_URL` and `RANCHER_ENV_ID`,
+   preferably in secret variables, or in `.gitlab-ci.yml`.
+   (In the example URL `https://rancher.example.com/env/1a81/apps/stacks/1e551/services/1s1456/containers`
+   the environment ID is `1a81`. This ID always starts with `1a`.)
 4. Add something like this to your `.gitlab-ci.yml`:
 
-```yaml
-stages:
- # [...]
- - deploy
+    ```yaml
+    stages:
+    # [...]
+    - deploy
 
-deploy-production:
-  stage: deploy
-  image: kiwicom/crane
-  script:
-    - crane --stack my-app --service app --service worker --new-image $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-  environment:
-    name: production
-    url: https://my-app.example.com/
-  when: manual
-```
+    deploy-production:
+      stage: deploy
+      image: kiwicom/crane
+      script:
+        - crane --stack my-app --service api --service worker --new-image $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+      environment:
+        name: production
+        url: https://my-app.example.com/
+      when: manual
+    ```
 
 ## Settings
 
