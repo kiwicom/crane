@@ -1,49 +1,32 @@
 # crane
 
-A GitLab CI ready image for Rancher upgrades.
+A GitLab CI ready image to upgrade services in Rancher.
 
-## How to use
+## Usage
 
-- Deploy your application on Rancher manually
-- Get a Rancher API key
-  - click the `API` button in the environment your app is in, then `Add Environment API key`
-  - name it `gitlab/group/project deployment`, or similar
-- Add the secret key as a secret variable in the project (`RANCHER_SECRET_KEY`)
-  - add the `RANCHER_URL`, `RANCHER_ACCESS_KEY`, `RANCHER_ENV_ID`, `RANCHER_SERVICE_NAME`
-    either in secret variables, or `.gitlab-ci.yml`
-  - <https://gitlab.skypicker.com/group/project/variables>
-- Go to your application on Rancher, and note the Environment ID in the URL
-  - Example URL: <https://example.com/env/1a81/apps/stacks/1e551/services/1s1456/containers>
-    — the environment ID is `1a81`, it always starts with `1a`
-- Edit `.gitlab-ci.yml`
+1. Deploy your application on Rancher manually,
+   with a commit SHA tagged image.
+2. Get a Rancher Environment API key and add the API keypair as secret variables in the project, named `RANCHER_ACCESS_KEY` and `RANCHER_SECRET_KEY`.
+3. Also add `RANCHER_URL` and `RANCHER_ENV_ID`, preferably in secret variables, or in `.gitlab-ci.yml`. (In the example URL https://rancher.example.com/env/1a81/apps/stacks/1e551/services/1s1456/containers the environment ID is `1a81`. This ID always starts with `1a`.)
+4. Add something like this to your `.gitlab-ci.yml`:
 
-
-```
+```yaml
 stages:
- [...]
+ # [...]
  - deploy
 
-variables:
-  TEST_IMAGE: $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-  RANCHER_URL: https://example.com/                         # Change to the Rancher URL
-  RANCHER_ACCESS_KEY: 9vQ4fcpn4Kfuvjxkcpc9PoudImzxoj6pQxa   # Change to your Rancher access key
-  RANCHER_ENV_ID: 1a81                                      # Change to the environment ID of your app
-  RANCHER_SERVICE_NAME: webserver                           # Change to the service ID of your app
-
-[...]
-
-production:
+deploy-production:
   stage: deploy
-  image: registry.skypicker.com:5005/bence/crane
+  image: kiwicom/crane
   script:
-    - crane --new-image $TEST_IMAGE
+    - crane --stack my-app --service app --service worker --new-image $CI_REGISTRY_IMAGE:$CI_BUILD_REF
   environment:
     name: production
-    url: https://your-app.example.com/                      # Change to the URL of your app, or remove if none
+    url: https://my-app.example.com/
   when: manual
 ```
 
-## Environment variables and command flags
+## Settings
 
 | CLI flag                | Environment variable        | Required | Default |
 | ----------------------- | --------------------------- | -------- | ------- |
@@ -61,13 +44,15 @@ production:
 | `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 0       |
 | `--manual-finish`       | `CRANE_MANUAL_FINISH`       | No       | False   |
 
-## Integrations and extensions
+## Integrations & Extensions
 
-# Slack
+### Slack
 
-When `--slack-token` is defined, Crane can post an announcement to `--slack-channel` with details about
-the latest deployment. The announcement can contains useful links `--slack-link` to other services such
-as Datadog, Sentry or project repository.
+When `--slack-token` is set,
+crane can post an announcement to `--slack-channel`
+with details about the ongoing deployment.
+You can use `--slack-link` to add useful URLs to this announcements
+such as Datadog dashboards, Sentry issues, or the project repository.
 
 | CLI flag          | Environment variable  | Details                      |
 | ----------------- | --------------------- | ---------------------------- |
@@ -75,20 +60,20 @@ as Datadog, Sentry or project repository.
 | `--slack-channel` | `CRANE_SLACK_CHANNEL` | Slack channel to announce in |
 | `--slack-link`    | `CRANE_SLACK_LINK`    | links to mention in Slack    |
 
-# Sentry
+### Sentry
 
-With sentry integration `--sentry-webhook`, Crane update release details in Sentry.
-[Release tracking](https://docs.sentry.io/learn/releases/#what-is-a-release) is useful to provide additional context
-to errors tracked in Sentry.
+With `--sentry-webhook`, crane can post release details to Sentry.
+[Release tracking](https://docs.sentry.io/learn/releases/#what-is-a-release) is useful
+to provide additional context to errors tracked in Sentry.
 
 | CLI flag           | Environment variable   | Details                    |
 | ------------------ | ---------------------- | -------------------------- |
 | `--sentry-webhook` | `CRANE_SENTRY_WEBHOOK` | Sentry release webhook URL |
 
-# Generic webhooks
+### Generic webhooks
 
 With the `--webhook-url` option,
-you can specify URLs that Crane will send release info to,
+you can specify URLs that crane will send release info to,
 in its own format.
 One use for this is for analytics;
 if somebody sets up a listener for these events,
