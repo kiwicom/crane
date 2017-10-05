@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='crane',
-    version='0.2.0',
+    version='1.0.0',
     url='https://github.com/kiwicom/crane',
     author='Bence Nagy',
     author_email='bence@kiwi.com',
