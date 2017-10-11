@@ -30,7 +30,9 @@ class Hook(Base):
                             'message': commit.message,
                             'author_name': commit.author.name,
                             'author_email': commit.author.email,
-                            'timestamp': str(datetime.fromtimestamp(commit.committed_date + commit.committer_tz_offset)),
+                            'timestamp': str(datetime.fromtimestamp(
+                                commit.committed_date + commit.committer_tz_offset
+                            )),
                         } for commit in deployment.commits
                     ],
                 },
