@@ -1,5 +1,7 @@
 # crane
 
+![crane logo - an origami crane](logo.png)
+
 A GitLab CI ready image to upgrade services in Rancher.
 
 ## Usage
