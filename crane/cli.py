@@ -20,7 +20,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--batch-size', envvar=['CRANE_BATCH_SIZE', 'RANCHER_BATCH_SIZE'], default=1, help='containers to upgrade at once', show_default=True)
 @click.option('--batch-interval', envvar=['CRANE_BATCH_INTERVAL', 'RANCHER_BATCH_INTERVAL'], default=2, help='seconds to wait between batches', show_default=True)
 @click.option('--start-first', envvar=['CRANE_START_FIRST', 'RANCHER_START_FIRST'], default=False, is_flag=True, help='start new containers before stopping old')
-@click.option('--new-image', envvar=['CRANE_NEW_IMAGE', 'RANCHER_SERVICE_IMAGE'], default=None, help='Docker image URL to upgrade to')
+@click.option('--new-image', envvar=['CRANE_NEW_IMAGE', 'RANCHER_SERVICE_IMAGE'], required=True, help='URL of new Docker image, usually $CI_REGISTRY_IMAGE:$CI_BUILD_REF')
 @click.option('--sleep-after-upgrade', envvar='CRANE_SLEEP_AFTER_UPGRADE', default=0, help='seconds to wait after upgrade', show_default=True)
 @click.option('--no-finish-upgrade', '--manual-finish', envvar=['CRANE_MANUAL_FINISH', 'CRANE_NO_FINISH_UPGRADE'], default=False, is_flag=True, help='skip automatic upgrade finish')
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')

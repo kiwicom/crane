@@ -42,12 +42,12 @@ A GitLab CI ready image to upgrade services in Rancher.
 | `--secret-key`          | `RANCHER_SECRET_KEY`        | Yes      |         |
 | `--env`                 | `RANCHER_ENV_ID`            | Yes      |         |
 | `--stack`               | `RANCHER_STACK_NAME`        | Yes      |         |
+| `--new-image`           | `CRANE_NEW_IMAGE`           | Yes      |         |
 | `--service`             | `RANCHER_SERVICE_NAME`      | No       | app     |
 | `--sidekick`            | `RANCHER_SIDEKICK_NAME`     | No       | None    |
 | `--batch-size`          | `RANCHER_BATCH_SIZE`        | No       | 1       |
 | `--batch-interval`      | `RANCHER_BATCH_INTERVAL`    | No       | 2       |
 | `--start-first`         | `RANCHER_START_FIRST`       | No       | False   |
-| `--new-image`           | `CRANE_NEW_IMAGE`           | No       | None    |
 | `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 0       |
 | `--manual-finish`       | `CRANE_MANUAL_FINISH`       | No       | False   |
 
