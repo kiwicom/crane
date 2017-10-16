@@ -15,7 +15,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--secret', '--secret-key', envvar='RANCHER_SECRET_KEY', required=True, help='Rancher secret key')
 @click.option('--project', '--env', envvar=['RANCHER_ENV_ID', 'RANCHER_PROJECT_ID'], required=True, help='ID of environment to operate in')
 @click.option('--stack', envvar='RANCHER_STACK_NAME', required=True, help='stack to upgrade')
-@click.option('--service', envvar=['RANCHER_SERVICE_NAME', 'RANCHER_SERVICE_ID'], default='app', multiple=True, help='services to upgrade', show_default=True)
+@click.option('--service', envvar=['RANCHER_SERVICE_NAME', 'RANCHER_SERVICE_ID'], default=['app'], multiple=True, help='services to upgrade', show_default=True)
 @click.option('--sidekick', envvar='RANCHER_SIDEKICK_NAME', default=None, help='sidekick to use instead of primary service')
 @click.option('--batch-size', envvar=['CRANE_BATCH_SIZE', 'RANCHER_BATCH_SIZE'], default=1, help='containers to upgrade at once', show_default=True)
 @click.option('--batch-interval', envvar=['CRANE_BATCH_INTERVAL', 'RANCHER_BATCH_INTERVAL'], default=2, help='seconds to wait between batches', show_default=True)
