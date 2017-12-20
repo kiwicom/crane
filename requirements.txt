@@ -8,9 +8,12 @@ attrs==17.2.0
 certifi==2017.4.17        # via requests
 chardet==3.0.4            # via requests
 click==6.7
+datadog==0.17.0
+decorator==4.1.2          # via datadog
 gitdb2==2.0.2             # via gitpython
 gitpython==2.1.5
 idna==2.5                 # via requests
 requests==2.18.1
+simplejson==3.13.2        # via datadog
 smmap2==2.0.3             # via gitdb2
 urllib3==1.21.1           # via requests
