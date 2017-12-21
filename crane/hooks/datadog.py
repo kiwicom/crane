@@ -1,3 +1,4 @@
+from functools import partial
 from os import environ
 
 import datadog
@@ -17,17 +18,13 @@ class Hook(Base):
     def create_event(self, alert_type):
         datadog.api.Event.create(
             title='crane.deployment',
-            text='\n'.join([commit.summary for commit in deployment.commits]),
-            priority='normal',
+            text='\n'.join([commit.summary for commit in reversed(deployment.commits)]),
             tags=['author:{0}'.format(environ['GITLAB_USER_EMAIL']), 'project:{0}'.format(environ['CI_PROJECT_PATH'])],
             alert_type=alert_type,
         )
 
-    def after_upgrade_success(self):
-        self.create_event('success')
-
-    def after_upgrade_failure(self):
-        self.create_event('failure')
+    after_upgrade_success = partial(create_event, 'success')
+    after_upgrade_failure = partial(create_event, 'error')
 
     @property
     def is_active(self):
