@@ -19,7 +19,8 @@ class Hook(Base):
         datadog.api.Event.create(
             title='crane.deployment',
             text='\n'.join([commit.summary for commit in reversed(deployment.commits)]),
-            tags=['author:{0}'.format(environ['GITLAB_USER_EMAIL']), 'project:{0}'.format(environ['CI_PROJECT_PATH'])],
+            tags=['author:{0}'.format(environ['GITLAB_USER_EMAIL']),
+                  'project:{0}'.format(environ['CI_PROJECT_PATH_SLUG'])],
             alert_type=alert_type,
         )
 

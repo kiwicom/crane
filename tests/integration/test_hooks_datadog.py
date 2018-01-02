@@ -21,8 +21,8 @@ def repo():
 
 
 @pytest.mark.parametrize(['commits', 'event', 'text', 'tags'], [
-    [['1'], 'success', '1', ['author:picky@kiwi.com', 'project:gitlab.skypicker.com/foo/bar']],
-    [['1', '2'], 'success', '1\n2', ['author:picky@kiwi.com', 'project:gitlab.skypicker.com/foo/bar']],
+    [['1'], 'success', '1', ['author:picky@kiwi.com', 'project:foo-bar']],
+    [['1', '2'], 'success', '1\n2', ['author:picky@kiwi.com', 'project:foo-bar']],
 ])
 def test_create_event(monkeypatch, mocker, repo, commits, event, text, tags):
     old_version = repo.head.commit.hexsha
