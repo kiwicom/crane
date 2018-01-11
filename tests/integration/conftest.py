@@ -15,3 +15,4 @@ def gitlab_ci_env(monkeypatch):
     monkeypatch.setenv('CI_PROJECT_URL', '')
     monkeypatch.setenv('CI_JOB_ID', '')
     monkeypatch.setenv('CI_REGISTRY_IMAGE', '')
+    monkeypatch.setenv('GITLAB_USER_EMAIL', 'picky@kiwi.com')
