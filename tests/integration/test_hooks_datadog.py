@@ -19,7 +19,7 @@ def repo():
         yield repo
 
 
-@pytest.mark.parametrize(['commits', 'event', 'text' ], [
+@pytest.mark.parametrize(['commits', 'event', 'text'], [
     [['1'], 'success', '1', ],
     [['1', '2'], 'success', '1\n2'],
     [[], 'success', ''],
