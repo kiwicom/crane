@@ -101,3 +101,9 @@ def test_after_upgrade_success():
 
 def test_after_upgrade_failure():
     pass
+
+@pytest.mark.parametrize(['commit', 'people'], [
+    ['', []]
+])
+def test_get_tagged_people(commit, people):
+    pass

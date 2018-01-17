@@ -93,6 +93,14 @@ class Hook(Base):
                 message['attachments'][0]['fields'] = AttachmentFields(message['attachments'][0]['fields'])
                 return message
 
+    @staticmethod
+    def get_tagged_people(commit_msg):
+        people = []
+        for line in commit_msg.splitlines():
+            if line.startswith('cc'):
+                people.append(list(filter(lambda x: x.startswith('@'), line.split())))
+        return people
+
     def get_changelog(self):
         if deployment.is_redeploy:
             return 'Re-deploy without changes.'
@@ -105,6 +113,7 @@ class Hook(Base):
             (
                 f'<{environ["CI_PROJECT_URL"]}/commit/{commit.hexsha}|{commit.summary}> '
                 f'by {self.users_by_email.get(commit.author.email, commit.author.name)}'
+                f', cc {Hook.get_tagged_people(commit.summary)}'
             ) for commit in deployment.commits
         )
 
