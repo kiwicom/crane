@@ -29,8 +29,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL')
 @click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to')
 @click.option('--webhook-token', envvar='CRANE_WEBHOOK_TOKEN', default=None, help='auth token for webhooks')
-@click.option('--datadog-api-key', envvar='CRANE_DATADOG_API_KEY', default=None, help='Datadog api key')
-@click.option('--datadog-app-key', envvar='CRANE_DATADOG_APP_KEY', default=None, help='Datadog app key')
+@click.option('--datadog-api-key', envvar='CRANE_DATADOG_API_KEY', default=None, help='Datadog API key')
 # stop ignoring LineLengthBear
 def main(**parsed_settings):
     click_context = click.get_current_context()
