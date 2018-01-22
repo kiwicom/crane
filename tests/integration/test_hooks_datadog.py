@@ -36,7 +36,10 @@ def test_create_event(monkeypatch, mocker, repo, commits, event, text, tags):
     monkeypatch.setattr(uut, 'deployment', fake_deployment)
 
     dd_hook = uut.Hook()
-    dd_hook.create_event(event)
+    if event == 'success':
+        dd_hook.after_upgrade_success()
+    elif event == 'failure':
+        dd_hook.after_upgrade_failure()
 
     fake_create.assert_called_with(
         title='crane.deployment',
