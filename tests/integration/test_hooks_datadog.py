@@ -20,10 +20,10 @@ def repo():
 
 
 @pytest.mark.parametrize(['commits', 'event', 'text', 'tags'], [
-    [['1'], 'success', '1', ['author:picky@kiwi.com', 'project:foo-bar']],
-    [['1', '2'], 'success', '1\n2', ['author:picky@kiwi.com', 'project:foo-bar']],
-    [[], 'success', '', ['author:picky@kiwi.com', 'project:foo-bar']],
-    [['1'], 'failure', '1', ['author:picky@kiwi.com', 'project:foo-bar']],
+    [['1'], 'success', '1', ['releaser:picky@kiwi.com', 'project:foo/bar']],
+    [['1', '2'], 'success', '1\n2', ['releaser:picky@kiwi.com', 'project:foo/bar']],
+    [[], 'success', '', ['releaser:picky@kiwi.com', 'project:foo/bar']],
+    [['1'], 'error', '1', ['releaser:picky@kiwi.com', 'project:foo/bar']],
 ])
 def test_create_event(monkeypatch, mocker, repo, commits, event, text, tags):
     old_version = repo.head.commit.hexsha
@@ -38,11 +38,11 @@ def test_create_event(monkeypatch, mocker, repo, commits, event, text, tags):
     dd_hook = uut.Hook()
     if event == 'success':
         dd_hook.after_upgrade_success()
-    elif event == 'failure':
+    elif event == 'error':
         dd_hook.after_upgrade_failure()
 
     fake_create.assert_called_with(
-        title='crane.deployment',
+        title='foo/bar deployment',
         text=text,
         tags=tags,
         alert_type=event,

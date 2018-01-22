@@ -1,6 +1,7 @@
 ---
 stages:
   - build
+  - test
   - release
 
 variables:
@@ -33,6 +34,12 @@ build:
     - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+
+tests:
+  stage: test
+  image: docker:1.12
+  script:
+    - docker run $CI_REGISTRY_IMAGE:$CI_BUILD_REF pytest
 
 release-tag:
   stage: release
