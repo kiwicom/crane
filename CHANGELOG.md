@@ -5,6 +5,36 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.0.0 - 2018-01-22
+
+### Added
+
+- Send release events to Datadog with `--datadog-key` or `CRANE_DATADOG_KEY`.
+
+### Changed
+
+- Update from Alpine 3.5 to 3.7
+- Bumped Python dependency versions
+
+### Removed
+
+Compatibility with v0.x option names.
+These options were deprecated in v1.0.0 and are now not usable anymore.
+The full list is as follows
+
+- `--rancher-url` renamed to `--url`
+- `--access` renamed to `--access-key`
+- `--secret` renamed to `--secret-key`
+- `--project` renamed to `--env`
+- `--no-finish-upgrade` renamed to `--manual-finish`
+- `RANCHER_PROJECT_ID` renamed to `RANCHER_ENV_ID`
+- `RANCHER_SERVICE_ID` renamed to `RANCHER_SERVICE_NAME`
+- `RANCHER_BATCH_SIZE` renamed to `CRANE_BATCH_SIZE`
+- `RANCHER_BATCH_INTERVAL` renamed to `CRANE_BATCH_INTERVAL`
+- `RANCHER_START_FIRST` renamed to `CRANE_START_FIRST`
+- `RANCHER_SERVICE_IMAGE` renamed to `CRANE_NEW_IMAGE`
+- `CRANE_NO_FINISH_UPGRADE` renamed to `CRANE_MANUAL_FINISH`
+
 ## 1.1.3 - 2017-10-16
 
 ### Fixed
