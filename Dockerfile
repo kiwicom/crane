@@ -3,7 +3,7 @@ FROM python:3.6-alpine3.7
 RUN mkdir /app
 WORKDIR /app
 
-COPY *requirements.txt /app
+COPY *requirements.txt /app/
 RUN apk add --no-cache --virtual=.run-deps git &&\
     pip install -r requirements.txt -r test-requirements.txt
 
