@@ -10,7 +10,7 @@ from .base import Base
 class Hook(Base):
 
     def __init__(self):
-        datadog.initialize(api_key=settings['datadog_api_key'])
+        datadog.initialize(api_key=settings['datadog_key'])
 
     def create_event(self, alert_type):
         datadog.api.Event.create(
@@ -26,4 +26,4 @@ class Hook(Base):
 
     @property
     def is_active(self):
-        return bool(settings.get('datadog_api_key'))
+        return bool(settings.get('datadog_key'))

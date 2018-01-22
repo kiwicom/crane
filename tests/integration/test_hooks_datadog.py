@@ -8,8 +8,7 @@ from crane import settings, Deployment
 
 @pytest.fixture(autouse=True)
 def click_settings(monkeypatch):
-    monkeypatch.setitem(settings, 'datadog_api_key', '')
-    monkeypatch.setitem(settings, 'datadog_app_key', '')
+    monkeypatch.setitem(settings, 'datadog_key', '')
 
 
 @pytest.fixture

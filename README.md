@@ -77,6 +77,16 @@ to provide additional context to errors tracked in Sentry.
 | ------------------ | ---------------------- | -------------------------- |
 | `--sentry-webhook` | `CRANE_SENTRY_WEBHOOK` | Sentry release webhook URL |
 
+### Datadog
+
+If you set an API key with `--datadog-key`,
+Crane will post successful and failed releases to your Datadog event feed.
+These events can then be marked on charts and displayed on dashboards.
+
+| CLI flag        | Environment variable | Details                      |
+| --------------- | -------------------- | ---------------------------- |
+| `--datadog-key` | `CRANE_DATADOG_KEY`  | URLs to post release info to |
+
 ### Generic webhooks
 
 With the `--webhook-url` option,
