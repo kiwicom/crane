@@ -171,13 +171,21 @@ class Hook(Base):
     def set_status(self, message, status):
         fields = message['attachments'][0]['fields']
         env_lines = fields['Environment'].splitlines()
+        self.generate_env_lines(env_lines, status)
+        fields['Environment'] = '\n'.join(env_lines)
+
+    def generate_env_lines(self, env_lines, status):
         for index, line in enumerate(env_lines):
-            if line.startswith(self.env_text):
-                env_lines[index] = self.env_text + ' ' + status
+            env_dict = {'status': '', 'name': ''}
+            words = line.split()
+            if len(words) == 2:
+                env_dict['status'] = words[0]
+            env_dict['name'] = line.replace(env_dict['status'], '').strip()
+            if env_dict['name'] == self.env_text:
+                env_lines[index] = status + ' ' + self.env_text
                 break
         else:
-            env_lines.append(self.env_text + ' ' + status)
-        fields['Environment'] = '\n'.join(env_lines)
+            env_lines.append(status + ' ' + self.env_text)
 
     def before_upgrade(self):
         message = self.get_existing_message() or self.generate_new_message()
