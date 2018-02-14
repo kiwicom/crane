@@ -8,6 +8,13 @@ import crane
 from . import deployment, hooks, rancher, settings
 
 
+def validate_sentry(_, __, value):
+    if value:
+        if value[-1] != '/':
+            value += '/'
+    return value
+
+
 # start ignoring LineLengthBear
 @click.command()
 @click.option('--url', envvar='RANCHER_URL', required=True, help='Rancher API URL')
@@ -26,7 +33,7 @@ from . import deployment, hooks, rancher, settings
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
 @click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
 @click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
-@click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL')
+@click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL', callback=validate_sentry)
 @click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to')
 @click.option('--webhook-token', envvar='CRANE_WEBHOOK_TOKEN', default=None, help='auth token for webhooks')
 @click.option('--datadog-key', envvar='CRANE_DATADOG_KEY', default=None, help='key for posting release events')
