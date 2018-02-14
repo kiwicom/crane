@@ -71,7 +71,7 @@ class Hook(Base):
         if self.token:
             users_response = session.get('https://slack.com/api/users.list', params={'token': self.token})
             self.users_by_email = {
-                user['profile'].get('email'): '@' + user['name']
+                user['profile'].get('email'): '<@{0}>'.format(user['id'])
                 for user in users_response.json()['members']
             }
             channels_response = session.get('https://slack.com/api/channels.list', params={'token': self.token})
