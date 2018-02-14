@@ -20,7 +20,8 @@ class Hook(Base):
             title='{0} deployment'.format(environ['CI_PROJECT_PATH']),
             text='\n'.join(commit.summary for commit in reversed(deployment.commits)),
             tags=['releaser:{0}'.format(environ['GITLAB_USER_EMAIL']),
-                  'project:{0}'.format(environ['CI_PROJECT_PATH'])],
+                  'project:{0}'.format(environ['CI_PROJECT_PATH']),
+                  'environment:{0}'.format(environ['CI_ENVIRONMENT_NAME'])],
             alert_type=alert_type,
         )
 
