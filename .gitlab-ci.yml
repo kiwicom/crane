@@ -12,8 +12,11 @@ variables:
     --label com.skypicker.gitlab.ci.ref=$CI_BUILD_REF_NAME
     --label com.skypicker.gitlab.ci.build=$CI_PROJECT_URL/builds/$CI_BUILD_ID
 
+image: docker:1.12
+
 before_script:
   - export CI_BUILD_REF_SLUG=${CI_BUILD_REF_NAME/\//-}
+  - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY || true
 
 static-analysis:
   stage: build
@@ -23,7 +26,6 @@ static-analysis:
 
 build:
   stage: build
-  image: docker:1.12
   script:
     - >
       docker build .
@@ -31,21 +33,17 @@ build:
       $IMAGE_LABELS
       --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF
       --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
 
 tests:
   stage: test
-  image: docker:1.12
   script:
     - docker run $CI_REGISTRY_IMAGE:$CI_BUILD_REF pytest
 
 release-tag:
   stage: release
-  image: docker:1.12
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
     - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
@@ -54,9 +52,7 @@ release-tag:
 
 release-branch:
   stage: release
-  image: docker:1.12
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
     - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
@@ -65,7 +61,6 @@ release-latest:
   stage: release
   image: docker:1.12
   script:
-    - docker login -u gitlab-ci-token -p $CI_BUILD_TOKEN $CI_REGISTRY
     - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
     - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
