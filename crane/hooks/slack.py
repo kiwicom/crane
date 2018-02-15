@@ -119,6 +119,7 @@ class Hook(Base):
                 f'{self.generate_cc_message(commit)}'
             )
             for commit in deployment.commits
+            if len(commit.parents) == 1  # skip Merge commit
         )
 
     def generate_new_message(self):
