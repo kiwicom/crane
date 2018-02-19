@@ -93,6 +93,17 @@ class Hook(Base):
                 message['attachments'][0]['fields'] = AttachmentFields(message['attachments'][0]['fields'])
                 return message
 
+    @staticmethod
+    def generate_cc_message(commit):
+        result = ','.join(
+            line
+            for line in commit.message.splitlines()
+            if line.lower().startswith('cc')
+        )
+        if result:
+            result = ', ' + result
+        return result
+
     def get_changelog(self):
         if deployment.is_redeploy:
             return 'Re-deploy without changes.'
@@ -105,7 +116,9 @@ class Hook(Base):
             (
                 f'<{environ["CI_PROJECT_URL"]}/commit/{commit.hexsha}|{commit.summary}> '
                 f'by {self.users_by_email.get(commit.author.email, commit.author.name)}'
-            ) for commit in deployment.commits
+                f'{self.generate_cc_message(commit)}'
+            )
+            for commit in deployment.commits
         )
 
     def generate_new_message(self):
