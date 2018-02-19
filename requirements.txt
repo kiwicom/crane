@@ -8,7 +8,7 @@ attrs==17.4.0
 certifi==2018.1.18        # via requests
 chardet==3.0.4            # via requests
 click==6.7
-datadog==0.17.0
+datadog==0.19.0
 decorator==4.2.1          # via datadog
 gitdb2==2.0.3             # via gitpython
 gitpython==2.1.8
