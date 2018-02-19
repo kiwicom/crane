@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 2.1.0 - 2018-02-19
+
+### Added
+
+- Slack announcements will now include any line that starts with `cc`.
+  This can be used to ping stakeholders whenever your commit gets released.
+  Use it like this:
+
+  ```
+  Add some foo bar feature
+
+  Closes #123
+
+  cc @john.doe, @analytics (might have impact on sales)
+  ```
+- Datadog events now include the target environment's name in a tag.
+- The Slack integration got a bunch of automated tests.
+
+### Changed
+
+- The Slack message received some tiny cosmetic adjustments.
+- Merge commits are now filtered from the changelog posted on Slack.
+- Bumped Python dependency versions
+
+### Fixed
+
+- Fixed a long-standing bug that caused the Slack and Datadog hooks to fail
+  when the deployment switched branches,
+  and a changelog couldn't be generated.
+  Now at least the new latest commit will be posted (along with an explanation,)
+  and no exceptions will be thrown.
+- And fixed another long-standing bug,
+  where releasers' names would be repeated
+  every time a new job updated the Slack message,
+  like so: `Releaser: @john.doe & @john.doe & @john.doe & @john.doe`
+- Exceptions and tracebacks will now be printed at the correct lines,
+  not at the end of all output.
+- The Sentry hook won't fail anymore
+  if the URL's trailing slash is missing.
+
 ## 2.0.2 - 2018-01-22
 
 ### Fixed
