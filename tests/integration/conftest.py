@@ -11,6 +11,7 @@ from crane import deployment
 def gitlab_ci_env(monkeypatch):
     monkeypatch.setenv('GITLAB_USER_EMAIL', 'picky@kiwi.com')
     monkeypatch.setenv('CI_PROJECT_PATH', 'foo/bar')
-    monkeypatch.setenv('CI_PROJECT_URL', '')
-    monkeypatch.setenv('CI_JOB_ID', '')
-    monkeypatch.setenv('CI_REGISTRY_IMAGE', '')
+    monkeypatch.setenv('CI_PROJECT_URL', 'https://example.com/foo/bar')
+    monkeypatch.setenv('CI_JOB_ID', '1234567')
+    monkeypatch.setenv('CI_REGISTRY_IMAGE', 'registry.example.com/foo/bar')
+    monkeypatch.setenv('CI_ENVIRONMENT_NAME', 'a-b/c-d')
