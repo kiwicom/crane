@@ -28,7 +28,9 @@ class Hook(Base):
                     'author_name': commit.author.name,
                     'author_email': commit.author.email,
                     'timestamp': str(datetime.fromtimestamp(commit.committed_date + commit.committer_tz_offset)),
-                } for commit in deployment.commits
+                }
+                for commit in deployment.commits
+                if not deployment.is_rollback
             ],
         })
 

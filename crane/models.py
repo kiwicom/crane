@@ -28,16 +28,14 @@ class Deployment:
         return self.old_version + self.new_version
 
     @property
-    def reverse_id(self):
-        return self.new_version + self.old_version
-
-    @property
     def commits(self):
-        return list(self.repo.iter_commits(self.old_version + '...' + self.new_version))
-
-    @property
-    def is_redeploy(self):
-        return self.old_version == self.new_version
+        if self.is_redeploy:
+            return []
+        elif self.is_branch_switch:
+            return [self.new_commit]
+        elif self.is_rollback:
+            return list(self.repo.iter_commits(self.old_version + '...' + self.new_version))
+        return reversed(list(self.repo.iter_commits(self.old_version + '...' + self.new_version)))
 
     @property
     def old_commit(self):
@@ -50,3 +48,14 @@ class Deployment:
     @property
     def is_rollback(self):
         return self.new_commit.committed_date < self.old_commit.committed_date
+
+    @property
+    def is_redeploy(self):
+        return self.old_version == self.new_version
+
+    @property
+    def is_branch_switch(self):
+        return not (
+            self.repo.is_ancestor(self.old_version, self.new_version)
+            or self.repo.is_ancestor(self.new_version, self.old_version)
+        )

@@ -16,9 +16,15 @@ class Hook(Base):
         self.after_upgrade_failure = partial(self.create_event, 'error')
 
     def create_event(self, alert_type):
+        prefix = ''
+        if deployment.is_rollback:
+            prefix = 'Rollback:\n'
+        elif deployment.is_branch_switch:
+            prefix = 'Branches switched, this is only the new latest commit:\n'
+
         datadog.api.Event.create(
             title='{0} deployment'.format(environ['CI_PROJECT_PATH']),
-            text='\n'.join(commit.summary for commit in reversed(deployment.commits)),
+            text=prefix + '\n'.join(commit.summary for commit in deployment.commits),
             tags=['releaser:{0}'.format(environ['GITLAB_USER_EMAIL']),
                   'project:{0}'.format(environ['CI_PROJECT_PATH']),
                   'environment:{0}'.format(environ['CI_ENVIRONMENT_NAME'])],

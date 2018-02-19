@@ -2,7 +2,6 @@ from collections import UserList
 import json
 from os import environ
 
-import git
 import requests
 
 from .. import deployment, settings
@@ -94,10 +93,10 @@ class Hook(Base):
                 return message
 
     @staticmethod
-    def generate_cc_message(commit):
+    def generate_cc_message(commit_msg):
         result = ','.join(
             line
-            for line in commit.message.splitlines()
+            for line in commit_msg.splitlines()
             if line.lower().startswith('cc')
         )
         if result:
@@ -111,12 +110,16 @@ class Hook(Base):
         prefix = ''
         if deployment.is_rollback:
             prefix = ':warning: Rolling back the following changes:\n'
-
+        elif deployment.is_branch_switch:
+            prefix = (
+                ":warning: Switching branches, so the exact changes can't be determined. "
+                'The latest commit now is:\n'
+            )
         return prefix + '\n'.join(
             (
                 f'<{environ["CI_PROJECT_URL"]}/commit/{commit.hexsha}|{commit.summary}> '
                 f'by {self.users_by_email.get(commit.author.email, commit.author.name)}'
-                f'{self.generate_cc_message(commit)}'
+                f'{self.generate_cc_message(commit.message)}'
             )
             for commit in deployment.commits
             if len(commit.parents) == 1  # skip Merge commit
