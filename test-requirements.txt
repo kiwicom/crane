@@ -5,8 +5,20 @@
 #    pip-compile --output-file ./test-requirements.txt ./test-requirements.in
 #
 attrs==17.4.0             # via pytest
+certifi==2018.1.18        # via requests
+chardet==3.0.4            # via requests
+funcsigs==1.0.2           # via mock, pytest
+idna==2.6                 # via requests
+mock==2.0.0               # via pytest-mock
+pbr==3.1.1                # via mock
 pluggy==0.6.0             # via pytest
 py==1.5.2                 # via pytest
 pytest-mock==1.7.0
 pytest==3.4.0
-six==1.11.0               # via pytest
+requests-mock==1.4.0
+requests==2.18.4          # via requests-mock
+six==1.11.0               # via mock, pytest, requests-mock
+urllib3==1.22             # via requests
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools                # via pytest
