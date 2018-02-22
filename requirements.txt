@@ -13,6 +13,7 @@ decorator==4.2.1          # via datadog
 gitdb2==2.0.3             # via gitpython
 gitpython==2.1.8
 idna==2.6                 # via requests
+pybreaker==0.4.2
 requests==2.18.4
 simplejson==3.13.2        # via datadog
 smmap2==2.0.3             # via gitdb2

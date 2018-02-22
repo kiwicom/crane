@@ -2,18 +2,17 @@ import re
 
 import attr
 import click
+import pybreaker
 import requests
 
-from . import settings
+from . import settings, upgrade
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=5, max_retries=3)
 session.mount('http://', _adapter)
 session.mount('https://', _adapter)
 
-
-class UpgradeFailed(Exception):
-    pass
+time_breaker = pybreaker.CircuitBreaker(fail_max=20)
 
 
 @attr.s(frozen=True, slots=True)
@@ -31,6 +30,7 @@ class Entity:
     def log_name(self):
         return click.style(self.name, bold=True)
 
+    @time_breaker
     def json(self):
         response = session.get(self.api_url, timeout=60)
         response.raise_for_status()
@@ -141,7 +141,7 @@ class Service(Entity):
 
             click.secho(message, err=True, fg='red')
 
-            raise UpgradeFailed()
+            raise upgrade.UpgradeFailed()
 
     def finish_upgrade(self):
         response = session.post(self.api_url, params={'action': 'finishupgrade'}, timeout=60, json={})

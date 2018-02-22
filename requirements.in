@@ -3,3 +3,5 @@ click
 datadog
 gitpython
 requests
+pybreaker
+
