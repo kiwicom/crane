@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
   cc @john.doe, @analytics (might have impact on sales)
   ```
+
 - Datadog events now include the target environment's name in a tag.
 - The Slack integration got a bunch of automated tests.
 
