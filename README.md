@@ -3,6 +3,7 @@
 ![crane logo - an origami crane](logo.png)
 
 A GitLab CI ready image to upgrade services in Rancher.
+See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announcing-crane-e8ce911b187b)! 
 
 ## Usage
 
