@@ -18,7 +18,7 @@ class Hook(Base):
             prefix = 'Rolling back the following changes:\n'
         elif deployment.is_disconnected:
             prefix = (
-                'Switching branches, so the exact changes cannot be determined. '
+                'The exact changes cannot be determined from git history. '
                 'The latest commit now is:\n'
             )
 

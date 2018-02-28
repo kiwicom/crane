@@ -60,14 +60,14 @@ def test_get_existing_message(monkeypatch, mocker, repo, slack_response, result)
     assert slack_hook.get_existing_message()['attachments'][0]['fields'] == uut.AttachmentFields([])
 
 
-@pytest.mark.parametrize(['commits', 'result'], [
+@pytest.mark.parametrize(['commits', 'expected'], [
     [[], ''],
     [['1'], '<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author'],
     [['1', '2'], '<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author\n<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|2> by test_author'],
     [['1\ncc @picky cause reasons'], '<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author, cc @picky cause reasons'],
     [['1\nCC @picky cause reasons'], '<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author, CC @picky cause reasons'],
 ])
-def test_get_changelog(monkeypatch, repo, commits, result):
+def test_get_changelog(monkeypatch, repo, commits, expected):
     old_version = repo.head.commit.hexsha
     for commit in commits:
         repo.index.commit(commit, author=Actor('test_author', 'test@test.com'))
@@ -79,8 +79,28 @@ def test_get_changelog(monkeypatch, repo, commits, result):
     slack_hook.users_by_email = {}
 
     changelog = slack_hook.get_changelog()
-    match = re.fullmatch(result, changelog)
-    assert match is not None
+    assert re.fullmatch(expected, changelog)
+
+
+@pytest.mark.parametrize(['commits', 'expected'], [
+    [['1'], ":warning: The exact changes can't be determined from git history. The latest commit now is:\n<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author"],
+    [['1', '2'], ":warning: The exact changes can't be determined from git history. The latest commit now is:\n<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|2> by test_author"],
+    [['1\ncc @picky cause reasons'], ":warning: The exact changes can't be determined from git history. The latest commit now is:\n<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author, cc @picky cause reasons"],
+    [['1\nCC @picky cause reasons'], ":warning: The exact changes can't be determined from git history. The latest commit now is:\n<https://example.com/foo/bar/commit/[A-Fa-f0-9]{40}\|1> by test_author, CC @picky cause reasons"],
+])
+def test_get_changelog_force_push(monkeypatch, repo, commits, expected):
+    old_version = '0000000000000000000000000000000000000000'
+    for commit in commits:
+        repo.index.commit(commit, author=Actor('test_author', 'test@test.com'))
+
+    fake_deployment = Deployment(repo=repo, new_version='HEAD', old_version=old_version)
+    monkeypatch.setattr(uut, 'deployment', fake_deployment)
+
+    slack_hook = uut.Hook()
+    slack_hook.users_by_email = {}
+
+    changelog = slack_hook.get_changelog()
+    assert re.fullmatch(expected, changelog)
 
 
 def test_get_changelog_redeploy(monkeypatch, repo):

@@ -108,13 +108,14 @@ class Hook(Base):
             return 'Re-deploy without changes.'
 
         prefix = ''
-        if deployment.is_rollback:
-            prefix = ':warning: Rolling back the following changes:\n'
-        elif deployment.is_branch_switch:
+        if deployment.is_disconnected:
             prefix = (
-                ":warning: Switching branches, so the exact changes can't be determined. "
+                ":warning: The exact changes can't be determined from git history. "
                 'The latest commit now is:\n'
             )
+        elif deployment.is_rollback:
+            prefix = ':warning: Rolling back the following changes:\n'
+
         return prefix + '\n'.join(
             (
                 f'<{environ["CI_PROJECT_URL"]}/commit/{commit.hexsha}|{commit.summary}> '
