@@ -4,6 +4,8 @@ import pybreaker
 import pytest
 import requests
 
+import crane
+import crane.exc
 from crane import upgrade as uut, settings
 
 
@@ -66,7 +68,7 @@ def test_check_state(states, raises):
     done = set()
 
     if raises:
-        with pytest.raises(uut.UpgradeFailed):
+        with pytest.raises(crane.exc.UpgradeFailed):
             uut.check_state(services, done)
     else:
         uut.check_state(services, done)
@@ -86,7 +88,7 @@ def test_wait_for_upgrade_ok(mocker, services, sleep_count):
 
 @pytest.mark.parametrize(['services', 'error_to_raise', 'expected_error'], [
     [set(), pybreaker.CircuitBreakerError, None],
-    [set(range(1)), pybreaker.CircuitBreakerError, uut.UpgradeFailed],
+    [set(range(1)), pybreaker.CircuitBreakerError, crane.exc.UpgradeFailed],
     [set(range(1)), requests.RequestException, None],
 ])
 def test_wait_for_upgrade_error(services, error_to_raise, expected_error):

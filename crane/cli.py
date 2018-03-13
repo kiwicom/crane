@@ -1,6 +1,9 @@
+import os
+
 import click
 
 from . import deployment, hooks, rancher, settings
+from .exc import UpgradeFailed
 from .upgrade import upgrade
 
 
@@ -23,7 +26,7 @@ def validate_sentry(_, __, value):
 @click.option('--batch-size', envvar='CRANE_BATCH_SIZE', default=1, help='containers to upgrade at once', show_default=True)
 @click.option('--batch-interval', envvar='CRANE_BATCH_INTERVAL', default=2, help='seconds to wait between batches', show_default=True)
 @click.option('--start-first', envvar='CRANE_START_FIRST', default=False, is_flag=True, help='start new containers before stopping old')
-@click.option('--new-image', envvar='CRANE_NEW_IMAGE', required=True, help='URL of new Docker image, usually $CI_REGISTRY_IMAGE:$CI_BUILD_REF')
+@click.option('--new-commit', envvar='CRANE_NEW_COMMIT', default=lambda: os.getenv('CI_COMMIT_SHA'), help='commit hash used in image tag')
 @click.option('--sleep-after-upgrade', envvar='CRANE_SLEEP_AFTER_UPGRADE', default=0, help='seconds to wait after upgrade', show_default=True)
 @click.option('--manual-finish', envvar='CRANE_MANUAL_FINISH', default=False, is_flag=True, help='skip automatic upgrade finish')
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
@@ -40,7 +43,11 @@ def main(**parsed_settings):
 
     settings.update(parsed_settings)
     rancher.session.auth = settings['access_key'], settings['secret_key']
-    deployment.load_from_settings(settings)
+
+    try:
+        deployment.load_from_settings(settings)
+    except UpgradeFailed:
+        return  # we handled it gracefully already
 
     hooks.dispatch('before_upgrade')
 
@@ -48,7 +55,7 @@ def main(**parsed_settings):
         upgrade(deployment.services)
     except Exception as ex:
         hooks.dispatch('after_upgrade_failure')
-        if isinstance(ex, rancher.UpgradeFailed):
+        if isinstance(ex, UpgradeFailed):
             return  # we handled it gracefully already
         raise
     else:

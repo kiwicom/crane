@@ -5,10 +5,7 @@ import pybreaker
 import requests
 
 from . import settings
-
-
-class UpgradeFailed(Exception):
-    pass
+from .exc import UpgradeFailed
 
 
 def upgrade(services):

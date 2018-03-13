@@ -5,7 +5,10 @@ import click
 import pybreaker
 import requests
 
-from . import settings, upgrade
+import crane
+import crane.exc
+
+from . import deployment, settings
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(pool_connections=5, pool_maxsize=5, max_retries=3)
@@ -113,8 +116,7 @@ class Service(Entity):
             launch_config = self.sidekick_launch_configs[settings['sidekick']]
             payload['inServiceStrategy']['secondaryLaunchConfigs'].append(launch_config)
 
-        if settings['new_image']:
-            launch_config['imageUuid'] = 'docker:{new_image}'.format_map(settings)
+        launch_config['imageUuid'] = launch_config['imageUuid'].replace(deployment.old_version, deployment.new_version)
 
         click.echo(f'Upgrading {self.log_name}…')
         response = session.post(self.api_url, params={'action': 'upgrade'}, json=payload, timeout=60)
@@ -141,7 +143,7 @@ class Service(Entity):
 
             click.secho(message, err=True, fg='red')
 
-            raise upgrade.UpgradeFailed()
+            raise crane.exc.UpgradeFailed()
 
     def finish_upgrade(self):
         response = session.post(self.api_url, params={'action': 'finishupgrade'}, timeout=60, json={})
