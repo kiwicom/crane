@@ -116,7 +116,11 @@ class Service(Entity):
             launch_config = self.sidekick_launch_configs[settings['sidekick']]
             payload['inServiceStrategy']['secondaryLaunchConfigs'].append(launch_config)
 
-        launch_config['imageUuid'] = launch_config['imageUuid'].replace(deployment.old_version, deployment.new_version)
+        launch_config['imageUuid'] = (
+            'docker:{new_image}'.format_map(settings)
+            if settings['new_image'] else
+            launch_config['imageUuid'].replace(deployment.old_version, deployment.new_version)
+        )
 
         click.echo(f'Upgrading {self.log_name}…')
         response = session.post(self.api_url, params={'action': 'upgrade'}, json=payload, timeout=60)

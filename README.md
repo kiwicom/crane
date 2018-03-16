@@ -8,7 +8,8 @@ See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announc
 ## Usage
 
 1. Deploy your application on Rancher manually,
-   with a commit SHA tagged image.
+   with an image tagged with a git reference
+   (our recommendation is to use the commit SHA, but you can also use git tags.)
 2. Get a Rancher Environment API key
    and add the API keypair as secret variables in the project,
    named `RANCHER_ACCESS_KEY` and `RANCHER_SECRET_KEY`.

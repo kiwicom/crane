@@ -25,12 +25,37 @@ class Deployment:
 
         self.repo = git.Repo(environ['CI_PROJECT_DIR'])
 
-        version_matches = re.findall(r'\b[0-9a-f]{40}\b', self.services[0].json()['launchConfig']['imageUuid'])
-        if len(version_matches) != 1:
-            click.secho('Your existing image tag must contain a commit SHA.', err=True, fg='red')
-            raise UpgradeFailed()
-        self.old_version = version_matches[0]
-        self.new_version = settings['new_commit']
+        old_image = self.services[0].json()['launchConfig']['imageUuid']
+
+        if settings['new_image']:
+            self.old_version = old_image.split(':')[-1]
+            self.new_version = settings['new_image'].split(':')[-1]
+        else:
+            version_matches = re.findall(r'\b[0-9a-f]{40}\b', old_image)
+
+            if not version_matches:
+                click.secho(
+                    'Your existing image seems to have no commit hash in its tag '
+                    + 'for me to be able to upgrade to the new commit, '
+                    + f"but it's currently tagged as just :{old_image.split(':')[-1]} "
+                    + click.style('(๑′°︿°๑)', bold=True),
+                    err=True,
+                    fg='red',
+                )
+                raise UpgradeFailed()
+            elif len(version_matches) > 1:
+                click.secho(
+                    'Your existing image seems to have multiple commit hashes in its tag, '
+                    + f"I don't know which one to replace, {', or'.join(version_matches)}! "
+                    + click.style('(｡•́︿•̀｡)', bold=True),
+                    err=True,
+                    fg='red',
+                )
+                raise UpgradeFailed()
+
+            self.old_version = version_matches[0]
+            self.new_version = settings['new_commit']
+
         self.check_preconditions()
 
     @property
@@ -75,8 +100,19 @@ class Deployment:
             return True
 
     def check_preconditions(self):
+        try:
+            self.new_commit
+        except git.GitCommandError:
+            click.secho(
+                f'The new version you specified, {self.new_version}, is not a valid git reference! '
+                'Please use a commit hash (or other ref) in your new_image tag.',
+                err=True,
+                fg='red',
+            )
+            raise UpgradeFailed()
+
         for service in self.services:
-            if self.old_version not in service.json()['launchConfig']['imageUuid']:
+            if self.old_version not in service.json()['launchConfig']['imageUuid'] and not settings['new_image']:
                 click.secho(
                     'All selected services must have the same commit SHA. '
                     'Please manually change their versions so they are all the same, and then retry the upgrade.',
