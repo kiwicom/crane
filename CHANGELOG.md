@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.0.0 - 2018-03-16
+
+### Added
+
+- Crane is now able to upgrade a group of services even if they are running different images.
+  Kiwi.com's internal use case for this is running some services on an image tagged
+  `:abc123` and others on `:abc123-py3`. After running a Crane upgrade, they will be changed to
+  `:def456` and `:def456-py3`, respectively.
+  The only restriction is that the image tags need to contain the commit hash somewhere,
+  separated by a non-alphanumeric character (such as `-`.)
+- Checking whether the services have been upgraded will now be retried until 20
+  consecutive failures are reached.
+  This should help when Rancher starts acting unstable only after the upgrade has already been initiated.
+- The calculated changelog is now printed to standard output before starting the upgrade,
+  so you can find out you're deploying the wrong commit as early as possible.
+- There's an extra sanity check making sure that all services are running the same version before the upgrade.
+  This ensures that you can trust the calculated changelogs to really be the only changes released.
+
+### Changed
+
+- ⚠️ **Breaking change**: Instead of the whole URL passed via `--new-image`,
+  Crane now only needs the new commit hash you want to deploy (via `--new-commit`).
+  The value of this option defaults to the commit SHA the GitLab CI pipeline is running for,
+  so in most cases you can just remove the `--new-image` option entirely.
+
+### Fixed
+
+- Hooks were failing to gather and post the changelog (or anything, for that matter)
+  when the old deployed commit has been removed by a force push.
+  The new behavior is to admit defeat, and mention how we can't determine the changes.
+- Sometimes the traceback was still printed
+  even if we gracefully handled the exception with a nice error message.
+- The Crane image had a few unused Python dependencies erroneously installed,
+  which have now been removed.
+
 ## 2.1.0 - 2018-02-19
 
 ### Added
