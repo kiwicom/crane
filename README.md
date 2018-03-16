@@ -3,7 +3,7 @@
 ![crane logo - an origami crane](logo.png)
 
 A GitLab CI ready image to upgrade services in Rancher.
-See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announcing-crane-e8ce911b187b)! 
+See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announcing-crane-e8ce911b187b)!
 
 ## Usage
 
@@ -27,7 +27,7 @@ See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announc
      stage: deploy
      image: kiwicom/crane
      script:
-       - crane --stack my-app --service api --service worker --new-image $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+       - crane --stack my-app --service api --service worker
      environment:
        name: production
        url: https://my-app.example.com/
@@ -43,7 +43,8 @@ See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announc
 | `--secret-key`          | `RANCHER_SECRET_KEY`        | Yes      |         |
 | `--env`                 | `RANCHER_ENV_ID`            | Yes      |         |
 | `--stack`               | `RANCHER_STACK_NAME`        | Yes      |         |
-| `--new-image`           | `CRANE_NEW_IMAGE`           | Yes      |         |
+| `--new-commit`          | `CRANE_NEW_COMMIT`          | No       | HEAD    |
+| `--new-image`           | `CRANE_NEW_IMAGE`           | No       | None    |
 | `--service`             | `RANCHER_SERVICE_NAME`      | No       | app     |
 | `--sidekick`            | `RANCHER_SIDEKICK_NAME`     | No       | None    |
 | `--batch-size`          | `RANCHER_BATCH_SIZE`        | No       | 1       |
