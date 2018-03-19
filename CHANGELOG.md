@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.0 - 2018-03-19
+
+### Added
+
+- The `--new-image` option has been readded (after being removed in 3.0.0),
+  and Crane now has proper support for images not tagged with a commit hash.
+  Any git reference (such as branch names or git tags) can now be used,
+  however we still **strongly recommend** running all images
+  that get to production with a commit hash tag.
+
 ## 3.0.0 - 2018-03-16
 
 ### Added
