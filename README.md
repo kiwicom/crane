@@ -5,6 +5,8 @@
 A GitLab CI ready image to upgrade services in Rancher.
 See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announcing-crane-e8ce911b187b)!
 
+[Join our chat over at Discord](https://discord.gg/YnGECS8) to get in touch with the community and Kiwi.com engineers.
+
 ## Usage
 
 1. Deploy your application on Rancher manually,
