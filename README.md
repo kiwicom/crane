@@ -48,9 +48,9 @@ See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announc
 | `--new-image`           | `CRANE_NEW_IMAGE`           | No       | None    |
 | `--service`             | `RANCHER_SERVICE_NAME`      | No       | app     |
 | `--sidekick`            | `RANCHER_SIDEKICK_NAME`     | No       | None    |
-| `--batch-size`          | `RANCHER_BATCH_SIZE`        | No       | 1       |
-| `--batch-interval`      | `RANCHER_BATCH_INTERVAL`    | No       | 2       |
-| `--start-first`         | `RANCHER_START_FIRST`       | No       | False   |
+| `--batch-size`          | `CRANE_BATCH_SIZE`          | No       | 1       |
+| `--batch-interval`      | `CRANE_BATCH_INTERVAL`      | No       | 2       |
+| `--start-first`         | `CRANE_START_FIRST`         | No       | False   |
 | `--sleep-after-upgrade` | `CRANE_SLEEP_AFTER_UPGRADE` | No       | 0       |
 | `--manual-finish`       | `CRANE_MANUAL_FINISH`       | No       | False   |
 
