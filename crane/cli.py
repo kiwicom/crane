@@ -1,4 +1,5 @@
 import os
+import sys
 
 import click
 
@@ -48,7 +49,7 @@ def main(**parsed_settings):
     try:
         deployment.load_from_settings(settings)
     except UpgradeFailed:
-        return  # we handled it gracefully already
+        sys.exit(1)  # we handled it gracefully already
 
     hooks.dispatch('before_upgrade')
 
@@ -57,7 +58,7 @@ def main(**parsed_settings):
     except Exception as ex:
         hooks.dispatch('after_upgrade_failure')
         if isinstance(ex, UpgradeFailed):
-            return  # we handled it gracefully already
+            sys.exit(1)  # we handled it gracefully already
         raise
     else:
         hooks.dispatch('after_upgrade_success')
