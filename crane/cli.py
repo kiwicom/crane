@@ -9,6 +9,9 @@ from .upgrade import upgrade
 
 
 def strip_trailing_slash(_, param, value):
+    if not value:
+        return
+
     return (
         value.rstrip('/')
         if not param.multiple
