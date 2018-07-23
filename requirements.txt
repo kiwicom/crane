@@ -4,17 +4,18 @@
 #
 #    pip-compile --output-file ./requirements.txt ./requirements.in
 #
-attrs==17.4.0
-certifi==2018.1.18        # via requests
+attrs==18.1.0
+certifi==2018.4.16        # via requests
 chardet==3.0.4            # via requests
 click==6.7
-datadog==0.19.0
-decorator==4.2.1          # via datadog
-gitdb2==2.0.3             # via gitpython
-gitpython==2.1.8
-idna==2.6                 # via requests
-pybreaker==0.4.2
-requests==2.18.4
-simplejson==3.13.2        # via datadog
-smmap2==2.0.3             # via gitdb2
-urllib3==1.22             # via requests
+datadog==0.22.0
+decorator==4.3.0          # via datadog
+gitdb2==2.0.4             # via gitpython
+gitpython==2.1.11
+idna==2.7                 # via requests
+pybreaker==0.4.4
+requests==2.19.1
+simplejson==3.16.0        # via datadog
+six==1.11.0               # via pybreaker
+smmap2==2.0.4             # via gitdb2
+urllib3==1.23             # via requests
