@@ -8,16 +8,13 @@ from .exc import UpgradeFailed
 from .upgrade import upgrade
 
 
-def validate_sentry(_, __, value):
-    if value:
-        if value[-1] != '/':
-            value += '/'
-    return value
+def strip_trailing_slash(_, __, value):
+    return value.rstrip('/')
 
 
 # start ignoring LineLengthBear
 @click.command()
-@click.option('--url', envvar='RANCHER_URL', required=True, help='Rancher API URL')
+@click.option('--url', envvar='RANCHER_URL', required=True, help='Rancher API URL', callback=strip_trailing_slash)
 @click.option('--access-key', envvar='RANCHER_ACCESS_KEY', required=True, help='Rancher access key')
 @click.option('--secret-key', envvar='RANCHER_SECRET_KEY', required=True, help='Rancher secret key')
 @click.option('--env', envvar='RANCHER_ENV_ID', required=True, help='ID of environment to operate in')
@@ -33,9 +30,9 @@ def validate_sentry(_, __, value):
 @click.option('--manual-finish', envvar='CRANE_MANUAL_FINISH', default=False, is_flag=True, help='skip automatic upgrade finish')
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
 @click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
-@click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
-@click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL', callback=validate_sentry)
-@click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to')
+@click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack', callback=strip_trailing_slash)
+@click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL', callback=strip_trailing_slash)
+@click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to', callback=strip_trailing_slash)
 @click.option('--webhook-token', envvar='CRANE_WEBHOOK_TOKEN', default=None, help='auth token for webhooks')
 @click.option('--datadog-key', envvar='CRANE_DATADOG_KEY', default=None, help='key for posting release events')
 # stop ignoring LineLengthBear

@@ -15,7 +15,7 @@ session.mount('https://', _adapter)
 class Hook(Base):
 
     def __init__(self):
-        self.webhook = settings['sentry_webhook']
+        self.webhook = settings['sentry_webhook'] + '/'
 
     def after_upgrade_success(self):
         session.post(self.webhook, json={
