@@ -26,7 +26,7 @@ See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announc
 
    deploy-production:
      stage: deploy
-     image: kiwicom/crane
+     image: kiwicom/crane:v3.1.1
      script:
        - crane --stack my-app --service api --service worker
      environment:

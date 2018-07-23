@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.1.1 - 2018-07-23
+
+### Changed
+
+- All settings that are URLs are now normalized to have no trailing slashes.
+  This fixes possibly broken links being printed in logs.
+- Crane now exits with status code 1 after errors that it handled.
+- Updated from Python 3.6 to 3.7
+- Updated from Alpine 3.7 to 3.8
+- Bumped Python dependency versions
+
+### Fixed
+
+- The error handling when the old services have mismatching commit hashes
+  is no longer always failing.
+- Some dependencies were forgotten from `setup.py`,
+  making Python package based installations broken.
+  This has been fixed by getting those dependencies from the requirements files,
+  which are always in sync as they're used for our Docker image releases.
+
 ## 3.1.0 - 2018-03-19
 
 ### Added

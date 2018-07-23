@@ -10,7 +10,7 @@ with open('test-requirements.in') as f:
 
 setup(
     name='crane',
-    version='3.1.0',
+    version='3.1.1',
     url='https://github.com/kiwicom/crane',
     author='Bence Nagy',
     author_email='bence@kiwi.com',
