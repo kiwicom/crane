@@ -1,6 +1,13 @@
 from setuptools import setup, find_packages
 
 
+with open('requirements.in') as f:
+    install_requires = [line for line in f if line and line[0] not in '#-']
+
+with open('test-requirements.in') as f:
+    tests_require = [line for line in f if line and line[0] not in '#-']
+
+
 setup(
     name='crane',
     version='3.1.0',
@@ -10,12 +17,8 @@ setup(
     download_url='https://github.com/kiwicom/crane',
     description='A GitLab CI ready image to upgrade services in Rancher.',
     packages=find_packages(),
-    install_requires=[
-        'attrs',
-        'click',
-        'gitpython',
-        'requests',
-    ],
+    install_requires=install_requires,
+    tests_require=tests_require,
     entry_points={'console_scripts': 'crane=crane.cli:main'},
     classifiers=[
         'Development Status :: 5 - Production/Stable',
