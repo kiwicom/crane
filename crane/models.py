@@ -5,7 +5,6 @@ import attr
 import click
 import git
 
-from . import settings
 from .exc import UpgradeFailed
 
 
@@ -101,6 +100,8 @@ class Deployment:
             return True
 
     def check_preconditions(self):
+        from . import settings  # avoiding circular imports
+
         try:
             self.new_commit
         except git.GitCommandError:
