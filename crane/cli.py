@@ -8,8 +8,12 @@ from .exc import UpgradeFailed
 from .upgrade import upgrade
 
 
-def strip_trailing_slash(_, __, value):
-    return value.rstrip('/')
+def strip_trailing_slash(_, param, value):
+    return (
+        value.rstrip('/')
+        if not param.multiple
+        else tuple(url.rstrip('/') for url in value)
+    )
 
 
 # start ignoring LineLengthBear
@@ -30,7 +34,7 @@ def strip_trailing_slash(_, __, value):
 @click.option('--manual-finish', envvar='CRANE_MANUAL_FINISH', default=False, is_flag=True, help='skip automatic upgrade finish')
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
 @click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
-@click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack', callback=strip_trailing_slash)
+@click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
 @click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL', callback=strip_trailing_slash)
 @click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to', callback=strip_trailing_slash)
 @click.option('--webhook-token', envvar='CRANE_WEBHOOK_TOKEN', default=None, help='auth token for webhooks')
