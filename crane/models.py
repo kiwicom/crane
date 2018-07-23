@@ -5,6 +5,7 @@ import attr
 import click
 import git
 
+from . import settings
 from .exc import UpgradeFailed
 
 
