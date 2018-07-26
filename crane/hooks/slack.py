@@ -2,7 +2,10 @@ from collections import UserList
 import json
 from os import environ
 
+import click
 import requests
+
+import crane.exc
 
 from .. import deployment, settings
 from .base import Base
@@ -61,6 +64,8 @@ class Hook(Base):
 
     def __init__(self):
         self.token = settings['slack_token']
+        self.slack_channel = settings['slack_channel']
+        self._verify_settings()
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
@@ -78,7 +83,24 @@ class Hook(Base):
                 channel['name']: channel['id']
                 for channel in channels_response.json()['channels']
             }
-            self.channel_id = self.channels_by_name[settings['slack_channel']]
+            self.channel_id = self.channels_by_name[self.slack_channel]
+
+    def _verify_settings(self):
+        if self.token and self.slack_channel is None:
+            message = (
+                f"You have set up Slack API token, but forget about Slack channel."
+                + click.style('(◕︿◕✿)', bold=True)
+                )
+            click.secho(message, err=False, fg='yellow')
+            raise crane.exc.UpgradeFailed()
+
+        if self.token is None and self.slack_channel:
+            message = (
+                f"You have set up Slack channel, but forget about Slack API token."
+                + click.style('(◕︿◕✿)', bold=True)
+                )
+            click.secho(message, err=False, fg='yellow')
+            raise crane.exc.UpgradeFailed()
 
     @property
     def base_data(self):
