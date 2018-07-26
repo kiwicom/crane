@@ -31,6 +31,11 @@ def repo():
         yield repo
 
 
+@pytest.fixture(autouse=True)
+def mock_verify_attributes(monkeypatch):
+    monkeypatch.setattr(__name__ + '.uut.Hook._verify_settings', lambda x: None)
+
+
 @pytest.mark.parametrize(['slack_response', 'result'], [
     [{'messages': []}, None],
 ])
