@@ -4,9 +4,9 @@ import re
 import attr
 import click
 import git
+import gitdb.exc
 
 from .exc import UpgradeFailed
-
 
 @attr.s(slots=True)
 class Deployment:
@@ -16,14 +16,13 @@ class Deployment:
     repo = attr.ib(default=None)
     old_version = attr.ib(default=None)
     new_version = attr.ib(default=None)
+    is_limited = attr.ib(default=False)
 
     def load_from_settings(self, settings):
         from . import rancher  # here to prevent circular importing
 
         self.stack = rancher.Stack.from_name(settings['stack'])
         self.services = [self.stack.service_from_name(service) for service in settings['service']]
-
-        self.repo = git.Repo(environ['CI_PROJECT_DIR'])
 
         old_image = self.services[0].json()['launchConfig']['imageUuid']
 
@@ -101,17 +100,30 @@ class Deployment:
 
     def check_preconditions(self):
         from . import settings  # avoiding circular imports
-
         try:
-            self.new_commit
-        except git.GitCommandError:
+            self.repo = git.Repo(environ['CI_PROJECT_DIR'])
+        except git.NoSuchPathError:
             click.secho(
-                f'The new version you specified, {self.new_version}, is not a valid git reference! '
-                'Please use a commit hash (or other ref) in your new_image tag.',
+                f'You are not running crane in a Git repository. '
+                'crane is running in limited mode, all hooks have been disabled. '
+                'It is highly recommended you use Git references for your deployments.',
                 err=True,
                 fg='red',
             )
-            raise UpgradeFailed()
+            self.is_limited = True
+            return
+        try:
+            self.new_commit
+        except gitdb.exc.BadName:
+            click.secho(
+                f'The new version you specified, {self.new_version}, is not a valid git reference! '
+                'crane is running in limited mode, all hooks have been disabled. '
+                'It is highly recommended you use Git references for your deployments.',
+                err=True,
+                fg='red',
+            )
+            self.is_limited = True
+            return
 
         for service in self.services:
             if self.old_version not in service.json()['launchConfig']['imageUuid'] and not settings['new_image']:

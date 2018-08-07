@@ -31,8 +31,6 @@ class Hook(Base):
         return f'{prefix}\n{commits_text}'
 
     def before_upgrade(self):
-        click.echo("Alrighty, let's deploy! " + click.style('ᕕ( ᐛ )ᕗ', bold=True))
-        click.echo(f'(But please supervise me at {deployment.stack.web_url})')
         click.echo(f'\n{self.get_changelog()}\n')
         click.echo('If this is not what you meant to deploy, you can cancel with the link above.')
 
