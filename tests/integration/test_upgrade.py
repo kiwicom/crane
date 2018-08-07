@@ -22,13 +22,10 @@ class FakeService:
         pass
 
     def json(self):
-        return {
-            'state': self.state,
-        }
+        return {"state": self.state}
 
 
 def get_fake_check_state(exception_to_raise=None):
-
     def fake_check_state(services, done):
         if services:
             tmp = services - done
@@ -39,30 +36,31 @@ def get_fake_check_state(exception_to_raise=None):
     return fake_check_state
 
 
-
-@pytest.mark.parametrize('count', [0, 1, 10])
+@pytest.mark.parametrize("count", [0, 1, 10])
 def test_service_start_upgrade(mocker, count):
-    fake_start_upgrade = mocker.patch.object(FakeService, 'start_upgrade')
+    fake_start_upgrade = mocker.patch.object(FakeService, "start_upgrade")
     uut.service_start_upgrade([FakeService() for _ in range(count)])
     assert fake_start_upgrade.call_count == count
 
 
-@pytest.mark.parametrize('count', [0, 1, 10])
+@pytest.mark.parametrize("count", [0, 1, 10])
 def test_service_finish_upgrade(mocker, count):
-    fake_finish_upgrade = mocker.patch.object(FakeService, 'finish_upgrade')
+    fake_finish_upgrade = mocker.patch.object(FakeService, "finish_upgrade")
     uut.service_finish_upgrade([FakeService() for _ in range(count)])
     assert fake_finish_upgrade.call_count == count
 
 
-@pytest.mark.parametrize(['states', 'raises'], [
-    [[], False],
-    [['upgrading'], False],
-    [['upgraded'], False],
-    [['foo'], True],
-    [['upgraded', 'upgraded'], False],
-    [['upgraded', 'upgraded', 'foo'], True],
-
-])
+@pytest.mark.parametrize(
+    ["states", "raises"],
+    [
+        [[], False],
+        [["upgrading"], False],
+        [["upgraded"], False],
+        [["foo"], True],
+        [["upgraded", "upgraded"], False],
+        [["upgraded", "upgraded", "foo"], True],
+    ],
+)
 def test_check_state(states, raises):
     services = [FakeService(state) for state in states]
     done = set()
@@ -74,23 +72,24 @@ def test_check_state(states, raises):
         uut.check_state(services, done)
 
 
-@pytest.mark.parametrize(['services', 'sleep_count'], [
-    [set(), 0],
-    [range(1), 1],
-    [range(666), 666],
-])
+@pytest.mark.parametrize(
+    ["services", "sleep_count"], [[set(), 0], [range(1), 1], [range(666), 666]]
+)
 def test_wait_for_upgrade_ok(mocker, services, sleep_count):
     uut.check_state = get_fake_check_state(None)
-    fake_sleep = mocker.patch.object(time, 'sleep')
+    fake_sleep = mocker.patch.object(time, "sleep")
     uut.wait_for_upgrade(set(services))
     assert fake_sleep.call_count == sleep_count
 
 
-@pytest.mark.parametrize(['services', 'error_to_raise', 'expected_error'], [
-    [set(), pybreaker.CircuitBreakerError, None],
-    [set(range(1)), pybreaker.CircuitBreakerError, crane.exc.UpgradeFailed],
-    [set(range(1)), requests.RequestException, None],
-])
+@pytest.mark.parametrize(
+    ["services", "error_to_raise", "expected_error"],
+    [
+        [set(), pybreaker.CircuitBreakerError, None],
+        [set(range(1)), pybreaker.CircuitBreakerError, crane.exc.UpgradeFailed],
+        [set(range(1)), requests.RequestException, None],
+    ],
+)
 def test_wait_for_upgrade_error(services, error_to_raise, expected_error):
     uut.check_state = get_fake_check_state(error_to_raise)
 
@@ -102,14 +101,14 @@ def test_wait_for_upgrade_error(services, error_to_raise, expected_error):
             assert not e
 
 
-@pytest.mark.parametrize('sleep_after_upgrade', [0, 1, 1])
+@pytest.mark.parametrize("sleep_after_upgrade", [0, 1, 1])
 def test_sleep_after_upgrade(monkeypatch, mocker, sleep_after_upgrade):
     services = set(range(42))
-    monkeypatch.setitem(settings, 'sleep_after_upgrade', sleep_after_upgrade)
-    monkeypatch.setitem(settings, 'manual_finish', False)
+    monkeypatch.setitem(settings, "sleep_after_upgrade", sleep_after_upgrade)
+    monkeypatch.setitem(settings, "manual_finish", False)
 
-    fake_sleep = mocker.patch.object(time, 'sleep')
-    fake_service_finish_upgrade = mocker.patch.object(uut, 'service_finish_upgrade')
+    fake_sleep = mocker.patch.object(time, "sleep")
+    fake_service_finish_upgrade = mocker.patch.object(uut, "service_finish_upgrade")
 
     uut.after_upgrade(services)
 
@@ -121,14 +120,14 @@ def test_sleep_after_upgrade(monkeypatch, mocker, sleep_after_upgrade):
     fake_service_finish_upgrade.assert_called_with(services)
 
 
-@pytest.mark.parametrize('sleep_after_upgrade', [0, 1, 1])
+@pytest.mark.parametrize("sleep_after_upgrade", [0, 1, 1])
 def test_manual_finish(monkeypatch, mocker, sleep_after_upgrade):
     services = set(range(42))
-    monkeypatch.setitem(settings, 'sleep_after_upgrade', sleep_after_upgrade)
-    monkeypatch.setitem(settings, 'manual_finish', True)
+    monkeypatch.setitem(settings, "sleep_after_upgrade", sleep_after_upgrade)
+    monkeypatch.setitem(settings, "manual_finish", True)
 
-    fake_sleep = mocker.patch.object(time, 'sleep')
-    fake_service_finish_upgrade = mocker.patch.object(uut, 'service_finish_upgrade')
+    fake_sleep = mocker.patch.object(time, "sleep")
+    fake_service_finish_upgrade = mocker.patch.object(uut, "service_finish_upgrade")
 
     uut.after_upgrade(services)
 
@@ -138,4 +137,3 @@ def test_manual_finish(monkeypatch, mocker, sleep_after_upgrade):
         assert fake_sleep.call_count == 0
 
     assert fake_service_finish_upgrade.call_count == 0
-

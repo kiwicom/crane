@@ -36,6 +36,12 @@ build:
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
 
+code-format:
+  stage: build
+  image: kiwicom/black:18.6b4
+  script:
+    - black --check .
+
 tests:
   stage: test
   script:

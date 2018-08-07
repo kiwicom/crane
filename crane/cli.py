@@ -13,12 +13,13 @@ def strip_trailing_slash(_, param, value):
         return
 
     return (
-        value.rstrip('/')
+        value.rstrip("/")
         if not param.multiple
-        else tuple(url.rstrip('/') for url in value)
+        else tuple(url.rstrip("/") for url in value)
     )
 
 
+# fmt: off
 # start ignoring LineLengthBear
 @click.command()
 @click.option('--url', envvar='RANCHER_URL', required=True, help='Rancher API URL', callback=strip_trailing_slash)
@@ -43,6 +44,7 @@ def strip_trailing_slash(_, param, value):
 @click.option('--webhook-token', envvar='CRANE_WEBHOOK_TOKEN', default=None, help='auth token for webhooks')
 @click.option('--datadog-key', envvar='CRANE_DATADOG_KEY', default=None, help='key for posting release events')
 # stop ignoring LineLengthBear
+# fmt: on
 def main(**parsed_settings):
     click_context = click.get_current_context()
     click_context.color = True  # GitLab doesn't report terminal type correctly so we need to force it
