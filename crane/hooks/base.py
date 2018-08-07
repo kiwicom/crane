@@ -26,8 +26,10 @@ class Base:
         except:
             click.secho(
                 f"Uh-oh, {self.__module__} couldn't handle {event}. Here's the traceback:\n",
-                fg='yellow',
+                fg="yellow",
                 err=True,
             )
             traceback.print_exc()
-            click.echo('\nOh well, on with the release! ' + click.style("乁( ◔ ౪◔)ㄏ", bold=True))
+            click.echo(
+                "\nOh well, on with the release! " + click.style("乁( ◔ ౪◔)ㄏ", bold=True)
+            )

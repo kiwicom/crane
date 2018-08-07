@@ -15,13 +15,13 @@ def upgrade(services):
 
 
 def after_upgrade(services):
-    if settings['sleep_after_upgrade']:
+    if settings["sleep_after_upgrade"]:
         click.echo(
             f'Upgrade done, waiting {settings["sleep_after_upgrade"]}s as requested '
-            + click.style('(ʃƪ˘･ᴗ･˘)', bold=True)
+            + click.style("(ʃƪ˘･ᴗ･˘)", bold=True)
         )
-        time.sleep(settings['sleep_after_upgrade'])
-    if not settings['manual_finish']:
+        time.sleep(settings["sleep_after_upgrade"])
+    if not settings["manual_finish"]:
         service_finish_upgrade(services)
 
 
@@ -35,8 +35,9 @@ def wait_for_upgrade(services):
             continue
         except pybreaker.CircuitBreakerError:
             click.secho(
-                'Rancher is unreachable! Please fix it for me ' + click.style('(´･ω･`)', bold=True),
-                fg='red',
+                "Rancher is unreachable! Please fix it for me "
+                + click.style("(´･ω･`)", bold=True),
+                fg="red",
                 err=True,
             )
             raise UpgradeFailed()
@@ -56,14 +57,17 @@ def check_state(services, done):
     for service in set(services) - done:
         service_json = service.json()
 
-        if service_json['state'] != 'upgrading':
-            click.echo(f"Rancher says {service.log_name} is now '{service_json['state']}'.")
+        if service_json["state"] != "upgrading":
+            click.echo(
+                f"Rancher says {service.log_name} is now '{service_json['state']}'."
+            )
             done.add(service)
-            if service_json['state'] != 'upgraded':
+            if service_json["state"] != "upgraded":
                 click.secho(
                     f"But I don't know what {service.log_name}'s '{service_json['state']}' state means! "
-                    + 'Please fix it for me ' + click.style('(´;︵;`)', bold=True),
-                    fg='red',
+                    + "Please fix it for me "
+                    + click.style("(´;︵;`)", bold=True),
+                    fg="red",
                     err=True,
                 )
                 raise UpgradeFailed()
