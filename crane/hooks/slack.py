@@ -2,6 +2,7 @@ from collections import UserList
 import json
 from os import environ
 
+import click
 import requests
 
 from .. import deployment, settings
@@ -62,13 +63,14 @@ class AttachmentFields(UserList):
 class Hook(Base):
     def __init__(self):
         self.token = settings["slack_token"]
+        self.slack_channel = settings["slack_channel"]
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
         # Ridiculous.
         self.deployment_text = f"<{deployment.id}.com| >"
 
-        if self.token:
+        if self.token and self.slack_channel:
             users_response = session.get(
                 "https://slack.com/api/users.list", params={"token": self.token}
             )
@@ -250,6 +252,21 @@ class Hook(Base):
 
     @property
     def is_active(self):
+        provided = missing = None
+        if settings.get("slack_token") and not settings.get("slack_channel"):
+            provided, missing = "API token", "channel"
+        elif settings.get("slack_channel") and not settings.get("slack_token"):
+            provided, missing = "channel", "API token"
+
+        if missing:
+            click.secho(
+                f"You have set a Slack {provided}, but forgot about setting the {missing}! "
+                "We all make mistakes though, don't worry "
+                + click.style("(⊃｡•́‿•̀｡)⊃", bold=True),
+                err=False,
+                fg="yellow",
+            )
+
         return settings.get("slack_token") and settings.get("slack_channel")
 
     @property

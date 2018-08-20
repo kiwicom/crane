@@ -4,22 +4,13 @@ import pytest
 import tempfile
 import git
 import requests
+import requests_mock
 from datetime import datetime
 from git import Actor
 
 from crane.hooks import slack as uut
 from crane import settings, Deployment, rancher
 from crane.hooks.slack import AttachmentFields
-
-
-@pytest.fixture(autouse=True)
-def click_setting(monkeypatch):
-    monkeypatch.setitem(settings, "slack_token", "")
-    monkeypatch.setitem(settings, "slack_channel", "")
-    monkeypatch.setitem(settings, "slack_link", "")
-    monkeypatch.setitem(settings, "url", "asd")
-    monkeypatch.setitem(settings, "env", "asd")
-    monkeypatch.setitem(settings, "stack", "asd")
 
 
 @pytest.fixture
@@ -33,6 +24,36 @@ def repo():
             commit_date=ts,
         )
         yield repo
+
+
+@pytest.fixture(autouse=True)
+def click_settings(monkeypatch):
+    monkeypatch.setitem(settings, "slack_token", "xoxp-123-456")
+    monkeypatch.setitem(settings, "slack_channel", "general")
+    monkeypatch.setitem(settings, "slack_link", "")
+    monkeypatch.setitem(settings, "url", "asd")
+    monkeypatch.setitem(settings, "env", "asd")
+    monkeypatch.setitem(settings, "stack", "asd")
+
+
+@pytest.fixture(autouse=True)
+def mock_slack_api(requests_mock):
+    requests_mock.get(
+        "https://slack.com/api/users.list",
+        json={"members": [{"profile": {"email": "jd@kiwi.com"}, "id": "123"}]},
+    )
+    requests_mock.get(
+        "https://slack.com/api/channels.list",
+        json={"channels": [{"name": "general", "id": "123"}]},
+    )
+
+
+@pytest.fixture(autouse=True)
+def mock_deployment(repo, monkeypatch):
+    fake_deployment = Deployment(
+        repo=repo, new_version="HEAD", old_version=repo.head.commit.hexsha
+    )
+    monkeypatch.setattr(uut, "deployment", fake_deployment)
 
 
 @pytest.mark.parametrize(["slack_response", "result"], [[{"messages": []}, None]])
@@ -267,7 +288,7 @@ def test_send_message(monkeypatch, mocker, repo, message_title, url, result_mess
     slack_hook.send_message(
         {"attachments": [{"fields": AttachmentFields([message_title])}]}
     )
-    base_data = {"token": "", "channel": "asd"}
+    base_data = {"token": "xoxp-123-456", "channel": "asd"}
     fake_post.assert_called_with(
         url, data={**base_data, "attachments": result_message, "link_names": "1"}
     )
@@ -291,7 +312,7 @@ def test_send_reply(monkeypatch, mocker, repo, message_id, text):
     fake_post.assert_called_with(
         "https://slack.com/api/chat.postMessage",
         data={
-            "token": "",
+            "token": "xoxp-123-456",
             "channel": "asd",
             "thread_ts": message_id,
             "text": text,
@@ -323,3 +344,32 @@ def test_set_status(monkeypatch, repo, environment_before, environment_after, ex
     slack_hook.set_status(message, environment_after)
 
     assert message["attachments"][0]["fields"]["Environment"] == expected
+
+
+def test_is_active__active():
+    slack_hook = uut.Hook()
+    assert slack_hook.is_active
+
+
+@pytest.mark.parametrize(
+    ["missing_setting", "expected_error"],
+    [
+        ("slack_token", "forgot about setting the API token"),
+        ("slack_channel", "forgot about setting the channel"),
+    ],
+)
+def test_is_active__missing_one(missing_setting, expected_error, monkeypatch, mocker):
+    monkeypatch.setitem(settings, missing_setting, None)
+    mock_secho = mocker.patch.object(uut.click, "secho")
+
+    slack_hook = uut.Hook()
+    assert not slack_hook.is_active
+    assert any([expected_error in str(args[0]) for args in mock_secho.call_args_list])
+
+
+def test_is_active__inactive(monkeypatch):
+    monkeypatch.setitem(settings, "slack_token", None)
+    monkeypatch.setitem(settings, "slack_channel", None)
+
+    slack_hook = uut.Hook()
+    assert not slack_hook.is_active

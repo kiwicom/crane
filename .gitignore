@@ -253,3 +253,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+#### Custom ####
+
+# pytest
+.pytest_cache/
