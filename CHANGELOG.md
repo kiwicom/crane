@@ -5,6 +5,40 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.2.0 - 2018-08-27
+
+### Added
+
+- Crane now has a new so-called *limited mode*,
+  for the rebels amongst you.
+  We made an attempt to save some work for ourselves
+  and enforce the convention of only ever deploying images
+  that are tagged with commit hashes.
+  Then, in 3.1.0, we relaxed this restriction to allow any git reference as the tag.
+  However we still kept hearing from people wanting to go around this.
+
+  Now, in 3.2.0, with huge thanks to @chauffer for submitting this pull request,
+  we are able to **disable all parts of crane that depend on information from git**.
+  If there's no repo available, or the image tag is not a valid git reference,
+  **crane will just skip all the hooks** code, and do a plain old Rancher upgrade.
+
+  Let us reiterate though: avoid this whenever possible.
+  We very strongly recommend the clean, pragmatic practice
+  of tagging your images with the commit hash.
+
+### Changed
+
+- Our Docker Hub image tags (and git tags)
+  now follow the official images' convention of
+  being written as just `1.2.3` as opposed to `v1.2.3`
+- Crane now adheres to the [black](https://github.com/ambv/black/) code style
+- Bumped Python dependency versions
+
+### Fixed
+
+- We now print a nice message instead of letting the Slack hook blow up
+  when someone sets only one of its two required settings.
+
 ## 3.1.1 - 2018-07-23
 
 ### Changed
