@@ -8,10 +8,9 @@ from . import settings, deployment
 from .exc import UpgradeFailed
 
 
-
 def upgrade(services):
-    click.echo("Alrighty, let's deploy! " + click.style('ᕕ( ᐛ )ᕗ', bold=True))
-    click.echo(f'(But please supervise me at {deployment.stack.web_url})')
+    click.echo("Alrighty, let's deploy! " + click.style("ᕕ( ᐛ )ᕗ", bold=True))
+    click.echo(f"(But please supervise me at {deployment.stack.web_url})")
 
     service_start_upgrade(services)
     wait_for_upgrade(services)

@@ -31,8 +31,10 @@ class Hook(Base):
         return f"{prefix}\n{commits_text}"
 
     def before_upgrade(self):
-        click.echo(f'\n{self.get_changelog()}\n')
-        click.echo('If this is not what you meant to deploy, you can cancel with the link above.')
+        click.echo(f"\n{self.get_changelog()}\n")
+        click.echo(
+            "If this is not what you meant to deploy, you can cancel with the link above."
+        )
 
     def after_upgrade_success(self):
         click.secho(
