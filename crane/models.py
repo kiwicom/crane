@@ -122,7 +122,7 @@ class Deployment:
             return
         try:
             self.new_commit
-        except gitdb.exc.BadName:
+        except (gitdb.exc.BadName, ValueError):
             click.secho(
                 f"The new version you specified, {self.new_version}, is not a valid git reference! "
                 "crane is running in limited mode, all hooks have been disabled. "
