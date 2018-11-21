@@ -19,6 +19,7 @@ def strip_trailing_slash(_, param, value):
     )
 
 
+# Ignore PyCommentedCodeBear
 # fmt: off
 # start ignoring LineLengthBear
 @click.command()
@@ -44,6 +45,7 @@ def strip_trailing_slash(_, param, value):
 @click.option('--webhook-token', envvar='CRANE_WEBHOOK_TOKEN', default=None, help='auth token for webhooks')
 @click.option('--datadog-key', envvar='CRANE_DATADOG_KEY', default=None, help='key for posting release events')
 # stop ignoring LineLengthBear
+# Ignore PyCommentedCodeBear
 # fmt: on
 def main(**parsed_settings):
     click_context = click.get_current_context()
