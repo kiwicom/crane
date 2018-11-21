@@ -40,7 +40,7 @@ build:
 
 code-format:
   stage: build
-  image: kiwicom/black:18.6b4
+  image: kiwicom/black:18.9b0
   script:
     - black --check .
 
