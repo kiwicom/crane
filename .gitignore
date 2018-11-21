@@ -260,3 +260,6 @@ $RECYCLE.BIN/
 
 # mypy
 .mypy_cache/
+
+# coala
+**/*.orig
