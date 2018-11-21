@@ -4,7 +4,7 @@ import click
 import pybreaker
 import requests
 
-from . import settings, deployment
+from . import deployment, settings
 from .exc import UpgradeFailed
 
 
