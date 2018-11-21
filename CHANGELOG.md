@@ -39,7 +39,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Changed
 
-- Our Docker Hub image tags (and git tags)
+- ⚠️ Our Docker Hub image tags (and git tags)
   now follow the official images' convention of
   being written as just `1.2.3` as opposed to `v1.2.3`
 - Crane now adheres to the [black](https://github.com/ambv/black/) code style
