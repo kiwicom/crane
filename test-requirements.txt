@@ -13,7 +13,7 @@ more-itertools==4.3.0     # via pytest
 pluggy==0.8.0             # via pytest
 py==1.7.0                 # via pytest
 pytest-mock==1.10.0
-pytest==4.0.0
+pytest==4.2.0
 requests-mock==1.5.2
 requests==2.20.1          # via requests-mock
 six==1.11.0               # via more-itertools, pytest, requests-mock
