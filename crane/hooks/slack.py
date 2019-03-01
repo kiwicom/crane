@@ -6,7 +6,7 @@ import backoff
 import click
 import requests
 
-from .. import deployment, settings
+from .. import settings
 from .base import Base
 
 session = requests.Session()
@@ -62,14 +62,15 @@ class AttachmentFields(UserList):
 
 
 class Hook(Base):
-    def __init__(self):
+    def __init__(self, deployment):
+        super().__init__(deployment)
         self.token = settings["slack_token"]
         self.slack_channels = settings["slack_channel"]
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
         # Ridiculous.
-        self.deployment_text = f"<{deployment.id}.com| >"
+        self.deployment_text = f"<{self.deployment.id}.com| >"
 
         self.users_by_email = {}
         self.channels_by_name = {}
@@ -128,16 +129,16 @@ class Hook(Base):
         return result
 
     def get_changelog(self):
-        if deployment.is_redeploy:
+        if self.deployment.is_redeploy:
             return "Re-deploy without changes."
 
         prefix = ""
-        if deployment.is_disconnected:
+        if self.deployment.is_disconnected:
             prefix = (
                 ":warning: The exact changes can't be determined from git history. "
                 "The latest commit now is:\n"
             )
-        elif deployment.is_rollback:
+        elif self.deployment.is_rollback:
             prefix = ":warning: Rolling back the following changes:\n"
 
         return prefix + "\n".join(
@@ -146,7 +147,7 @@ class Hook(Base):
                 f"by {self.users_by_email.get(commit.author.email, commit.author.name)}"
                 f"{self.generate_cc_message(commit.message)}"
             )
-            for commit in deployment.commits
+            for commit in self.deployment.commits
             if len(commit.parents) == 1  # skip Merge commit
         )
 
@@ -307,8 +308,13 @@ class Hook(Base):
     @property
     def links_text(self):
         links = {
-            "Image": f'{environ["CI_REGISTRY_IMAGE"]}:{deployment.new_version}',
-            "Stack": deployment.stack.web_url,
+            "Image": f'{environ["CI_REGISTRY_IMAGE"]}:{self.deployment.new_version}',
             **dict(settings["slack_link"]),
         }
+
+        try:
+            links["Stack"] = self.deployment.stack.web_url
+        except AttributeError:
+            pass
+
         return " | ".join(f"<{url}|{title}>" for title, url in links.items())

@@ -1,28 +1,15 @@
 import re
 
 import pytest
-import tempfile
-import git
 import requests
 from datetime import datetime
 from git import Actor
 
 from crane.hooks import slack as uut
-from crane import settings, Deployment, rancher
+from crane import settings, deployment
 from crane.hooks.slack import AttachmentFields
-
-
-@pytest.fixture
-def repo():
-    ts = datetime(2018, 1, 1, 0, 0, 0).isoformat()
-    with tempfile.TemporaryDirectory() as repo_dir:
-        repo = git.Repo.init(repo_dir)
-        repo.index.commit(
-            "Initial commit",
-            author=Actor("test_author", "test@test.com"),
-            commit_date=ts,
-        )
-        yield repo
+from crane import rancher
+from crane.rancher import models as rancher_models
 
 
 @pytest.fixture(autouse=True)
@@ -49,23 +36,16 @@ def mock_slack_api(requests_mock):
     )
 
 
-@pytest.fixture(autouse=True)
-def mock_deployment(repo, monkeypatch):
-    fake_deployment = Deployment(
-        repo=repo, new_version="HEAD", old_version=repo.head.commit.hexsha
-    )
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
-
-
 @pytest.mark.parametrize(["slack_response", "result"], [[{"messages": []}, None]])
 def test_get_existing_message(monkeypatch, mocker, repo, slack_response, result):
     old_version = repo.head.commit.hexsha
     for commit in ["1"]:
         repo.index.commit(commit, author=Actor("test_author", "test@test.com"))
 
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
-    slack_hook = uut.Hook()
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.channel_ids = ["123"]
     fake_get = mocker.patch.object(uut.session, "get")
     fake_response = mocker.Mock()
@@ -74,7 +54,7 @@ def test_get_existing_message(monkeypatch, mocker, repo, slack_response, result)
 
     assert slack_hook.get_existing_message("123") is None
 
-    deployment_id = f"<{uut.deployment.id}.com| >"
+    deployment_id = f"<{slack_hook.deployment.id}.com| >"
 
     fake_response.json = lambda: {
         "messages": [
@@ -146,10 +126,11 @@ def test_get_changelog(monkeypatch, repo, commits, expected):
     for commit in commits:
         repo.index.commit(commit, author=Actor("test_author", "test@test.com"))
 
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
 
-    slack_hook = uut.Hook()
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.users_by_email = {}
 
     changelog = slack_hook.get_changelog()
@@ -182,10 +163,11 @@ def test_get_changelog_force_push(monkeypatch, repo, commits, expected):
     for commit in commits:
         repo.index.commit(commit, author=Actor("test_author", "test@test.com"))
 
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
 
-    slack_hook = uut.Hook()
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.users_by_email = {}
 
     changelog = slack_hook.get_changelog()
@@ -193,9 +175,8 @@ def test_get_changelog_force_push(monkeypatch, repo, commits, expected):
 
 
 def test_get_changelog_redeploy(monkeypatch, repo):
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version="HEAD")
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
-    slack_hook = uut.Hook()
+    fake_deployment = deployment.Base(repo=repo, new_version="HEAD", old_version="HEAD")
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.users_by_email = {}
     assert fake_deployment.is_redeploy, "deployment should be redeploy"
     assert slack_hook.get_changelog() == "Re-deploy without changes."
@@ -209,9 +190,10 @@ def test_get_changelog_rollback(monkeypatch, repo):
             commit, author=Actor("test_author", "test@test.com"), commit_date=ts
         )
 
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
-    slack_hook = uut.Hook()
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.users_by_email = {}
 
     changelog = slack_hook.get_changelog()
@@ -259,15 +241,14 @@ def test_generate_new_message(monkeypatch, repo, commits, expected):
     for commit in commits:
         repo.index.commit(commit, author=Actor("test_author", "test@test.com"))
 
-    fake_deployment = Deployment(
+    fake_deployment = rancher.Deployment(
         repo=repo,
         new_version="HEAD",
         old_version=old_version,
-        stack=rancher.Stack("0st0", "foo"),
+        stack=rancher_models.Stack("0st0", "foo"),
     )
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
 
-    slack_hook = uut.Hook()
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.get_changelog = lambda: ""
     slack_hook.users_by_email = {"picky@kiwi.com": "@picky"}
 
@@ -310,12 +291,12 @@ def test_send_message(monkeypatch, mocker, repo, message_title, url, result_mess
     old_version = repo.head.commit.hexsha
     repo.index.commit("1")
 
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
-
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
     fake_post = mocker.patch.object(requests.Session, "post")
 
-    slack_hook = uut.Hook()
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.channel_ids = ["asd"]
     slack_hook.send_message(
         "asd", {"attachments": [{"fields": AttachmentFields([message_title])}]}
@@ -333,13 +314,13 @@ def test_send_reply(monkeypatch, mocker, repo, message_id, text):
         repo.index.commit(commit)
 
     fake_post = mocker.patch.object(requests.Session, "post")
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
 
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
-
-    slack_hook = uut.Hook()
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.channel_ids = ["asd"]
-    slack_hook.send_reply("asd", message_id, text)
+    slack_hook.send_reply(message_id, text)
 
     fake_post.assert_called_with(
         "https://slack.com/api/chat.postMessage",
@@ -367,19 +348,21 @@ def test_set_status(monkeypatch, repo, environment_before, environment_after, ex
     for commit in ["1"]:
         repo.index.commit(commit)
 
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
     message = {"attachments": [{"fields": {"Environment": environment_before}}]}
 
-    slack_hook = uut.Hook()
+    slack_hook = uut.Hook(fake_deployment)
     slack_hook.channel_ids = ["asd"]
     slack_hook.set_status(message, environment_after)
 
     assert message["attachments"][0]["fields"]["Environment"] == expected
 
 
-def test_is_active__active():
-    slack_hook = uut.Hook()
+def test_is_active__active(repo):
+    fake_deployment = deployment.Base(repo=repo, new_version="HEAD", old_version="HEAD")
+    slack_hook = uut.Hook(fake_deployment)
     assert slack_hook.is_active
 
 
@@ -390,18 +373,22 @@ def test_is_active__active():
         ("slack_channel", "forgot about setting the channels"),
     ],
 )
-def test_is_active__missing_one(missing_setting, expected_error, monkeypatch, mocker):
+def test_is_active__missing_one(
+    repo, missing_setting, expected_error, monkeypatch, mocker
+):
     monkeypatch.setitem(settings, missing_setting, None)
     mock_secho = mocker.patch.object(uut.click, "secho")
 
-    slack_hook = uut.Hook()
+    fake_deployment = deployment.Base(repo=repo, new_version="HEAD", old_version="HEAD")
+    slack_hook = uut.Hook(fake_deployment)
     assert not slack_hook.is_active
     assert any([expected_error in str(args[0]) for args in mock_secho.call_args_list])
 
 
-def test_is_active__inactive(monkeypatch):
+def test_is_active__inactive(monkeypatch, repo):
     monkeypatch.setitem(settings, "slack_token", None)
     monkeypatch.setitem(settings, "slack_channel", None)
 
-    slack_hook = uut.Hook()
+    fake_deployment = deployment.Base(repo=repo, new_version="HEAD", old_version="HEAD")
+    slack_hook = uut.Hook(fake_deployment)
     assert not slack_hook.is_active

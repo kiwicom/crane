@@ -3,7 +3,7 @@ from os import environ
 
 import requests
 
-from .. import deployment, settings
+from .. import settings
 from .base import Base
 
 session = requests.Session()
@@ -15,14 +15,15 @@ session.mount("https://", _adapter)
 
 
 class Hook(Base):
-    def __init__(self):
+    def __init__(self, deployment):
+        super().__init__(deployment)
         self.webhook = settings["sentry_webhook"]
 
     def after_upgrade_success(self):
         session.post(
             f"{self.webhook}/",
             json={
-                "version": deployment.new_version,
+                "version": self.deployment.new_version,
                 "url": f'{environ["CI_PROJECT_URL"]}/builds/{environ["CI_JOB_ID"]}',
                 "commits": [
                     {
@@ -36,8 +37,8 @@ class Hook(Base):
                             )
                         ),
                     }
-                    for commit in deployment.commits
-                    if not deployment.is_rollback
+                    for commit in self.deployment.commits
+                    if not self.deployment.is_rollback
                 ],
             },
         )

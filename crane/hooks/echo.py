@@ -1,6 +1,5 @@
 import click
 
-from .. import deployment
 from .base import Base
 
 
@@ -9,21 +8,21 @@ class Hook(Base):
     is_active = True
 
     def get_changelog(self):
-        if deployment.is_redeploy:
+        if self.deployment.is_redeploy:
             return "This is just a re-deploy, you are not deploying any new commits.\n"
 
         prefix = "You are releasing following the changes:"
-        if deployment.is_disconnected:
+        if self.deployment.is_disconnected:
             prefix = (
                 "The exact changes cannot be determined from git history. "
                 "The latest commit now is:\n"
             )
-        elif deployment.is_rollback:
+        elif self.deployment.is_rollback:
             prefix = "Rolling back the following changes:\n"
 
         commits_text = "\n".join(
             "  " + commit.summary
-            for commit in deployment.commits
+            for commit in self.deployment.commits
             if len(commit.parents) == 1  # skip Merge commit
         )
 

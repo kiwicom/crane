@@ -7,6 +7,9 @@ class Base:
 
     is_active = False
 
+    def __init__(self, deployment):
+        self.deployment = deployment
+
     def before_upgrade(self):
         return
 

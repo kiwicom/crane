@@ -1,22 +1,7 @@
-import git
 import pytest
-import tempfile
 import datadog
 from crane.hooks import datadog as uut
-from crane import settings, Deployment
-
-
-@pytest.fixture(autouse=True)
-def click_settings(monkeypatch):
-    monkeypatch.setitem(settings, "datadog_key", "")
-
-
-@pytest.fixture
-def repo():
-    with tempfile.TemporaryDirectory() as repo_dir:
-        repo = git.Repo.init(repo_dir)
-        repo.index.commit("Initial commit")
-        yield repo
+from crane import deployment
 
 
 @pytest.mark.parametrize(
@@ -36,11 +21,11 @@ def test_create_event(monkeypatch, mocker, repo, commits, event, text):
     tags = ["releaser:picky@kiwi.com", "project:foo/bar", "environment:a-b/c-d"]
 
     fake_create = mocker.patch.object(datadog.api.Event, "create")
-    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
+    fake_deployment = deployment.Base(
+        repo=repo, new_version="HEAD", old_version=old_version
+    )
 
-    monkeypatch.setattr(uut, "deployment", fake_deployment)
-
-    dd_hook = uut.Hook()
+    dd_hook = uut.Hook(fake_deployment)
     if event == "success":
         dd_hook.after_upgrade_success()
     elif event == "error":
