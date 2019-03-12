@@ -63,14 +63,14 @@ class AttachmentFields(UserList):
 class Hook(Base):
     def __init__(self):
         self.token = settings["slack_token"]
-        self.slack_channel = settings["slack_channel"]
+        self.slack_channels = settings["slack_channel"].split(',') if settings["slack_channel"] else []
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
         # Ridiculous.
         self.deployment_text = f"<{deployment.id}.com| >"
 
-        if self.token and self.slack_channel:
+        if self.token and self.slack_channels:
             users_response = session.get(
                 "https://slack.com/api/users.list", params={"token": self.token}
             )
@@ -85,15 +85,14 @@ class Hook(Base):
                 channel["name"]: channel["id"]
                 for channel in channels_response.json()["channels"]
             }
-            self.channel_id = self.channels_by_name[settings["slack_channel"]]
+            self.channel_ids = [self.channels_by_name[channel] for channel in self.slack_channels]
 
-    @property
-    def base_data(self):
-        return {"token": self.token, "channel": self.channel_id}
+    def base_data(self, channel_id):
+        return {"token": self.token, "channel": channel_id}
 
-    def get_existing_message(self):
+    def get_existing_message(self, channel_id):
         response = session.get(
-            "https://slack.com/api/channels.history", params=self.base_data
+            "https://slack.com/api/channels.history", params=self.base_data(channel_id)
         )
         messages = response.json()["messages"]
         for message in messages:
@@ -102,6 +101,9 @@ class Hook(Base):
                     message["attachments"][0]["fields"]
                 )
                 return message
+
+    def get_existing_messages(self):
+        return [self.get_existing_message(channel_id) for channel_id in self.channel_ids]
 
     @staticmethod
     def generate_cc_message(commit_msg):
@@ -157,7 +159,7 @@ class Hook(Base):
             ],
         }
 
-    def send_message(self, message):
+    def send_message(self, channel_id, message):
         fields = message["attachments"][0]["fields"]
 
         if ":x:" in fields["Environment"]:
@@ -175,13 +177,13 @@ class Hook(Base):
             message["parse"] = True
         else:
             url = "https://slack.com/api/chat.postMessage"
-        session.post(url, data={**self.base_data, **message, "link_names": "1"})
+        session.post(url, data={**self.base_data(channel_id), **message, "link_names": "1"})
 
-    def send_reply(self, message_id, text, in_channel=False):
+    def send_reply(self, channel_id, message_id, text, in_channel=False):
         session.post(
             "https://slack.com/api/chat.postMessage",
             data={
-                **self.base_data,
+                **self.base_data(channel_id),
                 "thread_ts": message_id,
                 "text": text,
                 "reply_broadcast": "true" if in_channel else "false",
@@ -209,54 +211,58 @@ class Hook(Base):
             env_lines.append(status + " " + self.env_text)
 
     def before_upgrade(self):
-        message = self.get_existing_message() or self.generate_new_message()
-        fields = message["attachments"][0]["fields"]
+        messages = self.get_existing_messages() or [self.generate_new_message()] * len(self.channel_ids)
 
-        if "ts" in message:
-            self.send_reply(message["ts"], f"Starting release on {self.env_text}.")
+        for channel_id, message in zip(self.channel_ids, messages):
+            fields = message["attachments"][0]["fields"]
 
-        self.set_status(message, ":spinner:")
+            if "ts" in message:
+                self.send_reply(channel_id, message["ts"], f"Starting release on {self.env_text}.")
 
-        releaser = self.users_by_email.get(
-            environ["GITLAB_USER_EMAIL"], environ["GITLAB_USER_EMAIL"]
-        )
-        if fields["Releaser"] and releaser.strip("@") not in fields["Releaser"]:
-            fields["Releaser"] += " & " + releaser
-        else:
-            fields["Releaser"] = releaser
+            self.set_status(message, ":spinner:")
 
-        fields["Branch"] = (
-            (":warning: " if environ["CI_COMMIT_REF_NAME"] != "master" else "")
-            + f'<{environ["CI_PROJECT_URL"]}/tree/{environ["CI_COMMIT_REF_NAME"]}|{environ["CI_COMMIT_REF_NAME"]}>'
-        )
+            releaser = self.users_by_email.get(
+                environ["GITLAB_USER_EMAIL"], environ["GITLAB_USER_EMAIL"]
+            )
+            if fields["Releaser"] and releaser.strip("@") not in fields["Releaser"]:
+                fields["Releaser"] += " & " + releaser
+            else:
+                fields["Releaser"] = releaser
 
-        self.send_message(message)
+            fields["Branch"] = (
+                (":warning: " if environ["CI_COMMIT_REF_NAME"] != "master" else "")
+                + f'<{environ["CI_PROJECT_URL"]}/tree/{environ["CI_COMMIT_REF_NAME"]}|{environ["CI_COMMIT_REF_NAME"]}>'
+            )
+
+            self.send_message(channel_id, message)
 
     def after_upgrade_success(self):
-        message = self.get_existing_message()
-        if not message:
+        messages = self.get_existing_messages()
+        if not messages:
             return  # we didn't even start
-        self.set_status(message, ":white_check_mark:")
-        self.send_message(message)
-        self.send_reply(message["ts"], f"Released on {self.env_text}.")
+        for channel_id, message in zip(self.channel_ids, messages):
+            self.set_status(message, ":white_check_mark:")
+            self.send_message(channel_id, message)
+            self.send_reply(channel_id, message["ts"], f"Released on {self.env_text}.")
 
     def after_upgrade_failure(self):
-        message = self.get_existing_message()
-        if not message:
+        messages = self.get_existing_messages()
+        if not messages:
             return  # we didn't even start
-        self.set_status(message, ":x:")
-        self.send_message(message)
-        self.send_reply(
-            message["ts"], f"Release failed on {self.env_text}.", in_channel=True
-        )
+        for channel_id, message in zip(self.channel_ids, messages):
+            self.set_status(message, ":x:")
+            self.send_message(channel_id, message)
+            self.send_reply(
+                channel_id, message["ts"], f"Release failed on {self.env_text}.", in_channel=True
+            )
 
     @property
     def is_active(self):
         provided = missing = None
-        if settings.get("slack_token") and not settings.get("slack_channel"):
-            provided, missing = "API token", "channel"
-        elif settings.get("slack_channel") and not settings.get("slack_token"):
-            provided, missing = "channel", "API token"
+        if self.token and not self.slack_channels:
+            provided, missing = "API token", "channels"
+        elif self.slack_channels and not self.token:
+            provided, missing = "channels", "API token"
 
         if missing:
             click.secho(
@@ -267,7 +273,7 @@ class Hook(Base):
                 fg="yellow",
             )
 
-        return settings.get("slack_token") and settings.get("slack_channel")
+        return self.token and self.slack_channels
 
     @property
     def env_text(self):
