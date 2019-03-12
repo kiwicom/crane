@@ -4,7 +4,6 @@ import pytest
 import tempfile
 import git
 import requests
-import requests_mock
 from datetime import datetime
 from git import Actor
 
@@ -29,7 +28,7 @@ def repo():
 @pytest.fixture(autouse=True)
 def click_settings(monkeypatch):
     monkeypatch.setitem(settings, "slack_token", "xoxp-123-456")
-    monkeypatch.setitem(settings, "slack_channel", "general")
+    monkeypatch.setitem(settings, "slack_channel", ["general", "team"])
     monkeypatch.setitem(settings, "slack_link", "")
     monkeypatch.setitem(settings, "url", "asd")
     monkeypatch.setitem(settings, "env", "asd")
@@ -44,7 +43,9 @@ def mock_slack_api(requests_mock):
     )
     requests_mock.get(
         "https://slack.com/api/channels.list",
-        json={"channels": [{"name": "general", "id": "123"}]},
+        json={
+            "channels": [{"name": "general", "id": "123"}, {"name": "team", "id": "42"}]
+        },
     )
 
 
@@ -65,13 +66,13 @@ def test_get_existing_message(monkeypatch, mocker, repo, slack_response, result)
     fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
     monkeypatch.setattr(uut, "deployment", fake_deployment)
     slack_hook = uut.Hook()
-    slack_hook.channel_id = "asd"
+    slack_hook.channel_ids = ["123"]
     fake_get = mocker.patch.object(uut.session, "get")
     fake_response = mocker.Mock()
     fake_response.json = lambda: {"messages": []}
     fake_get.return_value = fake_response
 
-    assert slack_hook.get_existing_message() is None
+    assert slack_hook.get_existing_message("123") is None
 
     deployment_id = f"<{uut.deployment.id}.com| >"
 
@@ -81,10 +82,41 @@ def test_get_existing_message(monkeypatch, mocker, repo, slack_response, result)
             {"text": "colemak", "attachments": [{"fields": []}]},
         ]
     }
-    assert slack_hook.get_existing_message()["text"] == deployment_id
-    assert slack_hook.get_existing_message()["attachments"][0][
+    assert slack_hook.get_existing_message("123")["text"] == deployment_id
+    assert slack_hook.get_existing_message("123")["attachments"][0][
         "fields"
     ] == uut.AttachmentFields([])
+
+
+@pytest.mark.parametrize(["slack_response", "result"], [[{"messages": []}, None]])
+def test_get_existing_messages(monkeypatch, mocker, repo, slack_response, result):
+    old_version = repo.head.commit.hexsha
+    for commit in ["1"]:
+        repo.index.commit(commit, author=Actor("test_author", "test@test.com"))
+
+    fake_deployment = Deployment(repo=repo, new_version="HEAD", old_version=old_version)
+    monkeypatch.setattr(uut, "deployment", fake_deployment)
+    slack_hook = uut.Hook()
+    slack_hook.channel_ids = ["123", "asd"]
+    fake_get = mocker.patch.object(uut.session, "get")
+    fake_response = mocker.Mock()
+    fake_response.json = lambda: {"messages": []}
+    fake_get.return_value = fake_response
+
+    assert slack_hook.get_existing_messages() == {"123": None, "asd": None}
+
+    deployment_id = f"<{uut.deployment.id}.com| >"
+
+    fake_response.json = lambda: {
+        "messages": [
+            {"text": deployment_id, "attachments": [{"fields": []}]},
+            {"text": "colemak", "attachments": [{"fields": []}]},
+        ]
+    }
+    messages = slack_hook.get_existing_messages()
+    assert len(messages) == 2
+    assert messages["123"]["text"] == deployment_id
+    assert messages["asd"]["attachments"][0]["fields"] == uut.AttachmentFields([])
 
 
 @pytest.mark.parametrize(
@@ -284,9 +316,9 @@ def test_send_message(monkeypatch, mocker, repo, message_title, url, result_mess
     fake_post = mocker.patch.object(requests.Session, "post")
 
     slack_hook = uut.Hook()
-    slack_hook.channel_id = "asd"
+    slack_hook.channel_ids = ["asd"]
     slack_hook.send_message(
-        {"attachments": [{"fields": AttachmentFields([message_title])}]}
+        "asd", {"attachments": [{"fields": AttachmentFields([message_title])}]}
     )
     base_data = {"token": "xoxp-123-456", "channel": "asd"}
     fake_post.assert_called_with(
@@ -306,8 +338,8 @@ def test_send_reply(monkeypatch, mocker, repo, message_id, text):
     monkeypatch.setattr(uut, "deployment", fake_deployment)
 
     slack_hook = uut.Hook()
-    slack_hook.channel_id = "asd"
-    slack_hook.send_reply(message_id, text)
+    slack_hook.channel_ids = ["asd"]
+    slack_hook.send_reply("asd", message_id, text)
 
     fake_post.assert_called_with(
         "https://slack.com/api/chat.postMessage",
@@ -340,7 +372,7 @@ def test_set_status(monkeypatch, repo, environment_before, environment_after, ex
     message = {"attachments": [{"fields": {"Environment": environment_before}}]}
 
     slack_hook = uut.Hook()
-    slack_hook.channel_id = "asd"
+    slack_hook.channel_ids = ["asd"]
     slack_hook.set_status(message, environment_after)
 
     assert message["attachments"][0]["fields"]["Environment"] == expected
@@ -355,7 +387,7 @@ def test_is_active__active():
     ["missing_setting", "expected_error"],
     [
         ("slack_token", "forgot about setting the API token"),
-        ("slack_channel", "forgot about setting the channel"),
+        ("slack_channel", "forgot about setting the channels"),
     ],
 )
 def test_is_active__missing_one(missing_setting, expected_error, monkeypatch, mocker):

@@ -38,7 +38,7 @@ def strip_trailing_slash(_, param, value):
 @click.option('--sleep-after-upgrade', envvar='CRANE_SLEEP_AFTER_UPGRADE', default=0, help='seconds to wait after upgrade', show_default=True)
 @click.option('--manual-finish', envvar='CRANE_MANUAL_FINISH', default=False, is_flag=True, help='skip automatic upgrade finish')
 @click.option('--slack-token', envvar='CRANE_SLACK_TOKEN', default=None, help='Slack API token')
-@click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, help='Slack channel to announce in')
+@click.option('--slack-channel', envvar='CRANE_SLACK_CHANNEL', default=None, multiple=True, help='Slack channel to announce in')
 @click.option('--slack-link', envvar='CRANE_SLACK_LINK', multiple=True, type=(str, str), metavar='TITLE URL', help='links to mention in Slack')
 @click.option('--sentry-webhook', envvar='CRANE_SENTRY_WEBHOOK', default=None, help='Sentry release webhook URL', callback=strip_trailing_slash)
 @click.option('--webhook-url', envvar='CRANE_WEBHOOK_URL', default=None, multiple=True, help='URLs to POST the release status to', callback=strip_trailing_slash)
