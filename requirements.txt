@@ -14,7 +14,7 @@ gitdb2==2.0.5             # via gitpython
 gitpython==2.1.11
 idna==2.7                 # via requests
 pybreaker==0.4.5
-requests==2.20.1
+requests==2.21.0
 six==1.11.0               # via pybreaker
 smmap2==2.0.5             # via gitdb2
 urllib3==1.24.1           # via requests
