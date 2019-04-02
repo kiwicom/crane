@@ -17,7 +17,6 @@ services:
   - docker:dind
 
 before_script:
-  - export CI_BUILD_REF_SLUG=${CI_BUILD_REF_NAME/\//-}
   - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY || true
 
 static-analysis:
