@@ -33,9 +33,9 @@ build:
       docker build .
       --label build-date=`date -Iseconds`
       $IMAGE_LABELS
-      --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
       --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
 
 code-format:
@@ -47,30 +47,23 @@ code-format:
 tests:
   stage: test
   script:
-    - docker run $CI_REGISTRY_IMAGE:$CI_BUILD_REF pytest
+    - docker run $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA pytest
 
 release-tag:
   stage: release
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-    - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
     - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
   only:
     - tags
-
-release-branch:
-  stage: release
-  script:
-    - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-    - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
-    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
 
 release-latest:
   stage: release
   image: docker:1.12
   script:
-    - docker pull $CI_REGISTRY_IMAGE:$CI_BUILD_REF
-    - docker tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF $CI_REGISTRY_IMAGE:latest
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
     - docker push $CI_REGISTRY_IMAGE:latest
   only:
     - master
