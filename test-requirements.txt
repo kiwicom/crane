@@ -5,7 +5,7 @@
 #    pip-compile --output-file test-requirements.txt test-requirements.in
 #
 atomicwrites==1.2.1       # via pytest
-attrs==18.2.0             # via pytest
+attrs==19.1.0             # via pytest
 certifi==2018.10.15       # via requests
 chardet==3.0.4            # via requests
 idna==2.7                 # via requests
