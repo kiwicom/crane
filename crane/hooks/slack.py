@@ -111,6 +111,8 @@ class Hook(Base):
                     message["attachments"][0]["fields"]
                 )
                 return message
+        else:
+            raise KeyError(f"There's no existing message in the {channel_id} channel")
 
     def get_existing_messages(self):
         return {
@@ -226,9 +228,13 @@ class Hook(Base):
             env_lines.append(status + " " + self.env_text)
 
     def before_upgrade(self):
-        messages = self.get_existing_messages() or {
-            channel_id: self.generate_new_message() for channel_id in self.channel_ids
-        }
+        try:
+            messages = self.get_existing_messages()
+        except KeyError:
+            messages = {
+                channel_id: self.generate_new_message()
+                for channel_id in self.channel_ids
+            }
 
         for channel_id, message in messages.items():
             fields = message["attachments"][0]["fields"]
@@ -256,18 +262,22 @@ class Hook(Base):
             self.send_message(channel_id, message)
 
     def after_upgrade_success(self):
-        messages = self.get_existing_messages()
-        if not messages:
+        try:
+            messages = self.get_existing_messages()
+        except KeyError:
             return  # we didn't even start
+
         for channel_id, message in messages.items():
             self.set_status(message, ":white_check_mark:")
             self.send_message(channel_id, message)
             self.send_reply(channel_id, message["ts"], f"Released on {self.env_text}.")
 
     def after_upgrade_failure(self):
-        messages = self.get_existing_messages()
-        if not messages:
+        try:
+            messages = self.get_existing_messages()
+        except KeyError:
             return  # we didn't even start
+
         for channel_id, message in messages.items():
             self.set_status(message, ":x:")
             self.send_message(channel_id, message)
