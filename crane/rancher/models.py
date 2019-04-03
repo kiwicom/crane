@@ -8,7 +8,7 @@ import requests
 import crane
 import crane.exc
 
-from . import deployment, settings
+from .. import settings
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(
@@ -100,7 +100,7 @@ class Service(Entity):
             config["name"]: config for config in self.json()["secondaryLaunchConfigs"]
         }
 
-    def start_upgrade(self):
+    def start_upgrade(self, old_version, new_version):
         payload = {
             "inServiceStrategy": {
                 "batchSize": settings["batch_size"],
@@ -122,9 +122,7 @@ class Service(Entity):
         launch_config["imageUuid"] = (
             "docker:{new_image}".format_map(settings)
             if settings["new_image"]
-            else launch_config["imageUuid"].replace(
-                deployment.old_version, deployment.new_version
-            )
+            else launch_config["imageUuid"].replace(old_version, new_version)
         )
 
         click.echo(f"Upgrading {self.log_name}…")

@@ -3,12 +3,13 @@ from os import environ
 
 import requests
 
-from .. import deployment, settings
+from .. import settings
 from .base import Base
 
 
 class Hook(Base):
-    def __init__(self):
+    def __init__(self, deployment):
+        super().__init__(deployment)
         self.urls = settings["webhook_url"]
         self.token = settings.get("webhook_token")
 
@@ -19,7 +20,7 @@ class Hook(Base):
                 headers={"Auth-Token": self.token},
                 json={
                     "status": "success",
-                    "version": deployment.new_version,
+                    "version": self.deployment.new_version,
                     "ci_project_url": environ["CI_PROJECT_URL"],
                     "ci_job_id": environ["CI_JOB_ID"],
                     "gitlab_user_email": environ["GITLAB_USER_EMAIL"],
@@ -35,7 +36,7 @@ class Hook(Base):
                                 )
                             ),
                         }
-                        for commit in deployment.commits
+                        for commit in self.deployment.commits
                     ],
                 },
             )

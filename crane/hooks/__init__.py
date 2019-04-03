@@ -3,14 +3,13 @@ import traceback
 import click
 
 from . import datadog, echo, sentry, slack, webhook
-from .. import deployment
 
 AVAILABLE_HOOKS = [datadog, echo, sentry, slack, webhook]
 
 HOOKS = []
 
 
-def dispatch(event):
+def dispatch(event, *, deployment):
     if deployment.is_limited:
         return
 
@@ -18,7 +17,7 @@ def dispatch(event):
         for module in AVAILABLE_HOOKS:
             hook_class = getattr(module, "Hook")
             try:
-                HOOKS.append(hook_class())
+                HOOKS.append(hook_class(deployment))
             except:
                 click.secho(
                     f"Oh, this is bad. I cannot load the '{module}' hook! "

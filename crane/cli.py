@@ -3,9 +3,9 @@ import sys
 
 import click
 
-from . import deployment, hooks, rancher, settings
+from .rancher import Deployment
+from . import hooks, settings
 from .exc import UpgradeFailed
-from .upgrade import upgrade
 
 
 def strip_trailing_slash(_, param, value):
@@ -52,21 +52,22 @@ def main(**parsed_settings):
     click_context.color = True  # GitLab doesn't report terminal type correctly so we need to force it
 
     settings.update(parsed_settings)
-    rancher.session.auth = settings['access_key'], settings['secret_key']
 
+    deployment = Deployment()
     try:
-        deployment.load_from_settings(settings)
+        deployment.load_from_settings()
+        deployment.check_preconditions()
     except UpgradeFailed:
         sys.exit(1)  # we handled it gracefully already
 
-    hooks.dispatch('before_upgrade')
+    hooks.dispatch('before_upgrade', deployment=deployment)
 
     try:
-        upgrade(deployment.services)
+        deployment.upgrade()
     except Exception as ex:
-        hooks.dispatch('after_upgrade_failure')
+        hooks.dispatch('after_upgrade_failure', deployment=deployment)
         if isinstance(ex, UpgradeFailed):
             sys.exit(1)  # we handled it gracefully already
         raise
     else:
-        hooks.dispatch('after_upgrade_success')
+        hooks.dispatch('after_upgrade_success', deployment=deployment)
