@@ -387,7 +387,7 @@ def test_is_active__active():
     ["missing_setting", "expected_error"],
     [
         ("slack_token", "forgot about setting the API token"),
-        ("slack_channel", "forgot about setting the channels"),
+        ("slack_channel", "forgot about setting the channel"),
     ],
 )
 def test_is_active__missing_one(missing_setting, expected_error, monkeypatch, mocker):
