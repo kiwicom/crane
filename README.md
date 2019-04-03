@@ -68,12 +68,16 @@ crane can post an announcement to `--slack-channel`
 with details about the ongoing deployment.
 You can use `--slack-link` to add useful URLs to this announcements
 such as Datadog dashboards, Sentry issues, or the project repository.
+You can set `--slack-channel` multiple times;
+all channels will have the same annnouncement posted to them.
+If you're setting the channel names via the environment variable,
+separate them with a space.
 
-| CLI flag          | Environment variable  | Details                      |
-| ----------------- | --------------------- | ---------------------------- |
-| `--slack-token`   | `CRANE_SLACK_TOKEN`   | Slack API token              |
-| `--slack-channel` | `CRANE_SLACK_CHANNEL` | Slack channel to announce in |
-| `--slack-link`    | `CRANE_SLACK_LINK`    | links to mention in Slack    |
+| CLI flag          | Environment variable  | Details                       |
+| ----------------- | --------------------- | ----------------------------- |
+| `--slack-token`   | `CRANE_SLACK_TOKEN`   | Slack API token               |
+| `--slack-channel` | `CRANE_SLACK_CHANNEL` | Slack channels to announce in |
+| `--slack-link`    | `CRANE_SLACK_LINK`    | links to mention in Slack     |
 
 ### Sentry
 
