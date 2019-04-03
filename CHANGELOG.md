@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## 3.3.0 - 2019-04-03
+
+### Added
+
+- You can now set multiple Slack channels to post to.
+
+### Fixed
+
+- Crane will no longer crash if a hook raises an exception during initialization.
+
+### Changed
+
+- The Slack hook will try to load workspace data three times.
+- Bumped Python dependency versions.
+
 ## 3.2.1 - 2018-09-07
 
 ### Fixed
@@ -20,7 +35,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 
-- Crane now has a new so-called *limited mode*,
+- Crane now has a new so-called _limited mode_,
   for the rebels amongst you.
   We made an attempt to save some work for ourselves
   and enforce the convention of only ever deploying images
