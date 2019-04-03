@@ -72,7 +72,8 @@ def test_get_existing_message(monkeypatch, mocker, repo, slack_response, result)
     fake_response.json = lambda: {"messages": []}
     fake_get.return_value = fake_response
 
-    assert slack_hook.get_existing_message("123") is None
+    with pytest.raises(KeyError):
+        slack_hook.get_existing_message("123")
 
     deployment_id = f"<{uut.deployment.id}.com| >"
 
@@ -103,7 +104,8 @@ def test_get_existing_messages(monkeypatch, mocker, repo, slack_response, result
     fake_response.json = lambda: {"messages": []}
     fake_get.return_value = fake_response
 
-    assert slack_hook.get_existing_messages() == {"123": None, "asd": None}
+    with pytest.raises(KeyError):
+        slack_hook.get_existing_messages()
 
     deployment_id = f"<{uut.deployment.id}.com| >"
 
