@@ -2,6 +2,7 @@ from collections import UserList
 import json
 from os import environ
 
+import backoff
 import click
 import requests
 
@@ -70,24 +71,31 @@ class Hook(Base):
         # Ridiculous.
         self.deployment_text = f"<{deployment.id}.com| >"
 
+        self.users_by_email = {}
+        self.channels_by_name = {}
+        self.channel_ids = []
+
         if self.token and self.slack_channels:
-            users_response = session.get(
-                "https://slack.com/api/users.list", params={"token": self.token}
-            )
-            self.users_by_email = {
-                user["profile"].get("email"): "<@{0}>".format(user["id"])
-                for user in users_response.json()["members"]
-            }
-            channels_response = session.get(
-                "https://slack.com/api/channels.list", params={"token": self.token}
-            )
-            self.channels_by_name = {
-                channel["name"]: channel["id"]
-                for channel in channels_response.json()["channels"]
-            }
+            self.load_workspace_data()
             self.channel_ids = [
                 self.channels_by_name[channel] for channel in self.slack_channels
             ]
+
+    @backoff.on_exception(backoff.expo, Exception, max_tries=3)
+    def load_workspace_data(self):
+        users_response = session.get(
+            "https://slack.com/api/users.list", params={"token": self.token}
+        )
+        users_response.raise_for_status()
+        for user in users_response.json()["members"]:
+            self.users_by_email[user["profile"].get("email")] = f"<@{user['id']}>"
+
+        channels_response = session.get(
+            "https://slack.com/api/channels.list", params={"token": self.token}
+        )
+        channels_response.raise_for_status()
+        for channel in channels_response.json()["channels"]:
+            self.channels_by_name[channel["name"]] = channel["id"]
 
     def base_data(self, channel_id):
         return {"token": self.token, "channel": channel_id}
@@ -274,9 +282,9 @@ class Hook(Base):
     def is_active(self):
         provided = missing = None
         if self.token and not self.slack_channels:
-            provided, missing = "API token", "channels"
+            provided, missing = "API token", "channel"
         elif self.slack_channels and not self.token:
-            provided, missing = "channels", "API token"
+            provided, missing = "channel", "API token"
 
         if missing:
             click.secho(
