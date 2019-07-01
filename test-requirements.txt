@@ -9,12 +9,17 @@ attrs==19.1.0             # via pytest
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
 idna==2.8                 # via requests
+importlib-metadata==0.18  # via pluggy, pytest
 more-itertools==7.0.0     # via pytest
-pluggy==0.9.0             # via pytest
+packaging==19.0           # via pytest
+pluggy==0.12.0            # via pytest
 py==1.8.0                 # via pytest
+pyparsing==2.4.0          # via packaging
 pytest-mock==1.10.3
-pytest==4.4.0
+pytest==5.0.0
 requests-mock==1.5.2
 requests==2.21.0          # via requests-mock
-six==1.12.0               # via pytest, requests-mock
+six==1.12.0               # via packaging, requests-mock
 urllib3==1.24.1           # via requests
+wcwidth==0.1.7            # via pytest
+zipp==0.5.1               # via importlib-metadata
