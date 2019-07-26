@@ -1,2 +1,8 @@
 .git
 **/.idea
+__pycache__/
+*.pyc
+
+*.egg-info/
+dist/
+build/

@@ -7,7 +7,7 @@ import requests
 
 from crane.exc import UpgradeFailed
 from . import models
-from .. import deployment, settings
+from .. import deployment
 
 
 @attr.s
@@ -16,22 +16,32 @@ class Deployment(deployment.Base):
     stack = attr.ib(default=None)
     services = attr.ib(default=None)
 
-    def load_from_settings(self):
-        super().load_from_settings()
+    @classmethod
+    def from_context(cls, ctx):
+        params = ctx.params
+        base_deployment = super().from_context(ctx)
+        base_kwargs = attr.asdict(base_deployment)
 
-        models.session.auth = settings["access_key"], settings["secret_key"]
+        models.session.auth = (params["access_key"], params["secret_key"])
 
-        self.stack = models.Stack.from_name(settings["stack"])
-        self.services = [
-            self.stack.service_from_name(service) for service in settings["service"]
-        ]
+        stack = models.Stack.from_name(params["url"], params["env"], params["stack"])
+        services = [stack.service_from_name(service) for service in params["service"]]
 
-        old_image = self.services[0].json()["launchConfig"]["imageUuid"]
+        old_image = services[0].json()["launchConfig"]["imageUuid"]
 
-        if settings["new_image"]:
-            self.old_version = old_image.split(":")[-1]
+        if params.get("new_image"):
+            old_version = old_image.split(":")[-1]
         else:
-            self.old_version = self.get_sha_from_image(old_image)
+            old_version = cls.get_sha_from_image(old_image)
+
+        new_kwargs = {
+            **base_kwargs,
+            "old_version": old_version,
+            "stack": stack,
+            "services": services,
+        }
+
+        return cls(**new_kwargs)
 
     def check_preconditions(self):
         super().check_preconditions()
@@ -39,7 +49,7 @@ class Deployment(deployment.Base):
         for service in self.services:
             if (
                 self.old_version not in service.json()["launchConfig"]["imageUuid"]
-                and not settings["new_image"]
+                and not self.ctx.params["new_image"]
             ):
                 click.secho(
                     "All selected services must have the same commit SHA. "
@@ -53,7 +63,7 @@ class Deployment(deployment.Base):
         click.echo(f"Please supervise me at {self.stack.web_url}!")
 
         for service in self.services:
-            service.start_upgrade(self.old_version, self.new_version)
+            service.start_upgrade(self.old_version, self.new_version, self.ctx.params)
 
     def wait_for_upgrade(self):
         upgraded_services = set()
@@ -96,7 +106,7 @@ class Deployment(deployment.Base):
                 raise UpgradeFailed()
 
     def finish_upgrade(self):
-        if settings["manual_finish"]:
+        if self.ctx.params["manual_finish"]:
             return
 
         for service in self.services:

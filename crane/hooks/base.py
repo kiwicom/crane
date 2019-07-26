@@ -10,13 +10,17 @@ class Base:
     def __init__(self, deployment):
         self.deployment = deployment
 
-    def before_upgrade(self):
+    @property
+    def ctx(self):
+        return self.deployment.ctx
+
+    def start(self):
         return
 
-    def after_upgrade_success(self):
+    def success(self):
         return
 
-    def after_upgrade_failure(self):
+    def failure(self):
         return
 
     def dispatch(self, event):

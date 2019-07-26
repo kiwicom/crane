@@ -28,17 +28,17 @@ class Hook(Base):
 
         return f"{prefix}\n{commits_text}"
 
-    def before_upgrade(self):
+    def start(self):
         click.echo(f"\n{self.get_changelog()}\n")
         click.echo(
             "If this is not what you meant to deploy, you can cancel with the link above."
         )
 
-    def after_upgrade_success(self):
+    def success(self):
         click.secho(
             "…and we're done. Good job, everyone! " + click.style("(◕‿◕✿)", bold=True),
             fg="green",
         )
 
-    def after_upgrade_failure(self):
+    def failure(self):
         click.echo()  # add newline before the traceback

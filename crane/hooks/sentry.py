@@ -3,7 +3,6 @@ from os import environ
 
 import requests
 
-from .. import settings
 from .base import Base
 
 session = requests.Session()
@@ -17,9 +16,9 @@ session.mount("https://", _adapter)
 class Hook(Base):
     def __init__(self, deployment):
         super().__init__(deployment)
-        self.webhook = settings["sentry_webhook"]
+        self.webhook = self.ctx.params["sentry_webhook"]
 
-    def after_upgrade_success(self):
+    def success(self):
         session.post(
             f"{self.webhook}/",
             json={
@@ -45,4 +44,4 @@ class Hook(Base):
 
     @property
     def is_active(self):
-        return bool(settings.get("sentry_webhook"))
+        return bool(self.ctx.params.get("sentry_webhook"))

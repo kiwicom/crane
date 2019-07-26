@@ -7,31 +7,36 @@ import click
 import git
 import gitdb
 
-from . import exc, settings
+from . import exc
 
 
 @attr.s(slots=True)
 class Base:
 
+    ctx = attr.ib()
     repo = attr.ib(default=None)
     old_version = attr.ib(default=None)
     new_version = attr.ib(default=None)
     is_limited = attr.ib(default=False)
 
-    def load_from_settings(self):
-        if settings["new_image"]:
-            self.new_version = settings["new_image"].split(":")[-1]
-        else:
-            self.new_version = settings["new_commit"]
+    @classmethod
+    def from_context(cls, ctx):
+        new_version = (
+            ctx.params["new_image"].split(":")[-1]
+            if ctx.params.get("new_image")
+            else ctx.params.get("new_commit")
+        )
+        return cls(
+            ctx=ctx, old_version=ctx.params.get("old_commit"), new_version=new_version
+        )
 
     def check_preconditions(self):
         try:
             self.repo = git.Repo(environ["CI_PROJECT_DIR"])
-        except git.NoSuchPathError:
+        except (git.NoSuchPathError, KeyError):
             click.secho(
-                f"You are not running crane in a Git repository. "
-                "crane is running in limited mode, all hooks have been disabled. "
-                "It is highly recommended you use Git references for your deployments.",
+                f"You are not running crane in GitLab CI with a repository. "
+                "crane is running in limited mode, all hooks have been disabled.",
                 err=True,
                 fg="red",
             )
@@ -125,20 +130,20 @@ class Base:
         self.start_upgrade()
         self.wait_for_upgrade()
 
-        if settings["sleep_after_upgrade"]:
+        if self.ctx.params["sleep_after_upgrade"]:
             click.echo(
-                f'Upgrade done, waiting {settings["sleep_after_upgrade"]}s as requested '
+                f'Upgrade done, waiting {self.ctx.params["sleep_after_upgrade"]}s as requested '
                 + click.style("(ʃƪ˘･ᴗ･˘)", bold=True)
             )
-            time.sleep(settings["sleep_after_upgrade"])
+            time.sleep(self.ctx.params["sleep_after_upgrade"])
 
         self.finish_upgrade()
 
     def start_upgrade(self):
-        raise NotImplementedError
+        pass
 
     def wait_for_upgrade(self):
-        raise NotImplementedError
+        pass
 
     def finish_upgrade(self):
-        raise NotImplementedError
+        pass

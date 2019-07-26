@@ -2,13 +2,11 @@ import re
 
 import attr
 import click
-import pybreaker
 import requests
 
 import crane
 import crane.exc
-
-from .. import settings
+import pybreaker
 
 session = requests.Session()
 _adapter = requests.adapters.HTTPAdapter(
@@ -23,6 +21,8 @@ time_breaker = pybreaker.CircuitBreaker(fail_max=20)
 @attr.s(frozen=True, slots=True)
 class Entity:
 
+    rancher_url = attr.ib(validator=attr.validators.instance_of(str))
+    env = attr.ib(validator=attr.validators.instance_of(str))
     id = attr.ib()
     name = attr.ib(validator=attr.validators.instance_of(str))
 
@@ -49,31 +49,82 @@ class Stack(Entity):
 
     @property
     def web_url(self):
-        return f'{settings["url"]}/env/{settings["env"]}/apps/stacks/{self.id}'
+        return f"{self.rancher_url}/env/{self.env}/apps/stacks/{self.id}"
 
     @property
     def api_url(self):
-        return f'{settings["url"]}/v1/projects/{settings["env"]}/environments/{self.id}'
+        return f"{self.rancher_url}/v1/projects/{self.env}/environments/{self.id}"
 
     @classmethod
-    def from_name(cls, name):
+    def from_name(cls, rancher_url, env, name):
+        if not name:
+            click.secho(
+                f"Well, this is a bit awkward. You need to tell me what stack to upgrade in."
+                + click.style("（˶′◡‵˶）", bold=True),
+                err=True,
+                fg="red",
+            )
+            click.secho(
+                "Normally I can guess it from the CI environment, but it seems I'm not running in CI now.",
+                err=True,
+                fg="red",
+            )
+            raise crane.exc.UpgradeFailed()
+
         response = session.get(
-            "{url}/v1/projects/{env}/environments".format_map(settings),
-            params={"name": name},
+            f"{rancher_url}/v1/projects/{env}/environments", params={"name": name}
         )
         response.raise_for_status()
-        stack_info = response.json()["data"][0]
+        matches = response.json()["data"]
 
-        return cls(stack_info["id"].replace("1e", "1st"), stack_info["name"])
+        if not matches:
+            click.secho(
+                f"I don't see a stack called '{name}' "
+                + click.style("(・_・)ヾ", bold=True),
+                err=True,
+                fg="red",
+            )
+            click.secho(
+                "I cannot upgrade like this, please check your configuration!",
+                err=True,
+                fg="red",
+            )
+            raise crane.exc.UpgradeFailed()
+
+        return cls(
+            rancher_url=rancher_url,
+            env=env,
+            id=matches[0]["id"].replace("1e", "1st"),
+            name=matches[0]["name"],
+        )
 
     def service_from_name(self, name):
         response = session.get(
-            "{url}/v1/projects/{env}/services".format_map(settings),
+            f"{self.rancher_url}/v1/projects/{self.env}/services",
             params={"name": name, "stackId": self.id},
         )
         response.raise_for_status()
-        service_info = response.json()["data"][0]
-        return Service(service_info["id"], service_info["name"], self)
+        matches = response.json()["data"]
+        if not matches:
+            click.secho(
+                f"I don't see a service called '{name}' in the '{self.name}' stack "
+                + click.style("(・_・)ヾ", bold=True),
+                err=True,
+                fg="red",
+            )
+            click.secho(
+                "I cannot upgrade like this, please check your configuration!",
+                err=True,
+                fg="red",
+            )
+            raise crane.exc.UpgradeFailed()
+        return Service(
+            rancher_url=self.rancher_url,
+            env=self.env,
+            id=matches[0]["id"],
+            name=matches[0]["name"],
+            stack=self,
+        )
 
 
 @attr.s(frozen=True, slots=True)
@@ -88,7 +139,9 @@ class Service(Entity):
 
     @property
     def api_url(self):
-        return f'{settings["url"]}/v1/projects/{settings["env"]}/services/{self.id}'
+        return (
+            f"{self.stack.rancher_url}/v1/projects/{self.stack.env}/services/{self.id}"
+        )
 
     @property
     def launch_config(self):
@@ -100,28 +153,28 @@ class Service(Entity):
             config["name"]: config for config in self.json()["secondaryLaunchConfigs"]
         }
 
-    def start_upgrade(self, old_version, new_version):
+    def start_upgrade(self, old_version, new_version, cli_params):
         payload = {
             "inServiceStrategy": {
-                "batchSize": settings["batch_size"],
-                "intervalMillis": settings["batch_interval"] * 1000,
-                "startFirst": settings["start_first"],
+                "batchSize": cli_params["batch_size"],
+                "intervalMillis": cli_params["batch_interval"] * 1000,
+                "startFirst": cli_params["start_first"],
                 "launchConfig": None,
                 "secondaryLaunchConfigs": [],
             }
         }
 
-        if not settings["sidekick"]:
+        if not cli_params.get("rancher_sidekick"):
             launch_config = payload["inServiceStrategy"][
                 "launchConfig"
             ] = self.launch_config
         else:
-            launch_config = self.sidekick_launch_configs[settings["sidekick"]]
+            launch_config = self.sidekick_launch_configs[cli_params["rancher_sidekick"]]
             payload["inServiceStrategy"]["secondaryLaunchConfigs"].append(launch_config)
 
         launch_config["imageUuid"] = (
-            "docker:{new_image}".format_map(settings)
-            if settings["new_image"]
+            "docker:{new_image}".format_map(cli_params)
+            if cli_params["new_image"]
             else launch_config["imageUuid"].replace(old_version, new_version)
         )
 

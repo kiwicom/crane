@@ -6,7 +6,6 @@ import backoff
 import click
 import requests
 
-from .. import settings
 from .base import Base
 
 session = requests.Session()
@@ -64,8 +63,8 @@ class AttachmentFields(UserList):
 class Hook(Base):
     def __init__(self, deployment):
         super().__init__(deployment)
-        self.token = settings["slack_token"]
-        self.slack_channels = settings["slack_channel"]
+        self.token = self.ctx.params["slack_token"]
+        self.slack_channels = self.ctx.params["slack_channel"]
         # The upcoming line is the most ridiculous, stupid, and effective hack I've ever written.
         # We create a link that has only a space as its link text, so it doesn't show up in Slack.
         # This allows us to store data in a fake URL, instead of needing a database or something.
@@ -226,10 +225,12 @@ class Hook(Base):
         else:
             env_lines.append(status + " " + self.env_text)
 
-    def before_upgrade(self):
-        messages = self.get_existing_messages() or {
-            channel_id: self.generate_new_message() for channel_id in self.channel_ids
-        }
+    def start(self):
+        messages = self.get_existing_messages()
+
+        for channel_id in self.channel_ids:
+            if not messages[channel_id]:
+                messages[channel_id] = self.generate_new_message()
 
         for channel_id, message in messages.items():
             fields = message["attachments"][0]["fields"]
@@ -256,7 +257,7 @@ class Hook(Base):
 
             self.send_message(channel_id, message)
 
-    def after_upgrade_success(self):
+    def success(self):
         messages = self.get_existing_messages()
         if not messages:
             return  # we didn't even start
@@ -265,7 +266,7 @@ class Hook(Base):
             self.send_message(channel_id, message)
             self.send_reply(channel_id, message["ts"], f"Released on {self.env_text}.")
 
-    def after_upgrade_failure(self):
+    def failure(self):
         messages = self.get_existing_messages()
         if not messages:
             return  # we didn't even start
@@ -283,9 +284,9 @@ class Hook(Base):
     def is_active(self):
         provided = missing = None
         if self.token and not self.slack_channels:
-            provided, missing = "API token", "channel"
+            provided, missing = "API token", "channels"
         elif self.slack_channels and not self.token:
-            provided, missing = "channel", "API token"
+            provided, missing = "channels", "API token"
 
         if missing:
             click.secho(
@@ -309,7 +310,7 @@ class Hook(Base):
     def links_text(self):
         links = {
             "Image": f'{environ["CI_REGISTRY_IMAGE"]}:{self.deployment.new_version}',
-            **dict(settings["slack_link"]),
+            **dict(self.ctx.params["slack_link"]),
         }
 
         try:

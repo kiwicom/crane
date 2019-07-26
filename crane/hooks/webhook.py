@@ -3,17 +3,16 @@ from os import environ
 
 import requests
 
-from .. import settings
 from .base import Base
 
 
 class Hook(Base):
     def __init__(self, deployment):
         super().__init__(deployment)
-        self.urls = settings["webhook_url"]
-        self.token = settings.get("webhook_token")
+        self.urls = self.ctx.params["webhook_url"]
+        self.token = self.ctx.params.get("webhook_token")
 
-    def after_upgrade_success(self):
+    def success(self):
         for url in self.urls:
             requests.post(
                 url,
@@ -43,4 +42,4 @@ class Hook(Base):
 
     @property
     def is_active(self):
-        return bool(settings.get("webhook_url"))
+        return bool(self.ctx.params.get("webhook_url"))

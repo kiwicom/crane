@@ -9,19 +9,6 @@ from git import Actor
 
 
 @pytest.fixture(autouse=True)
-def click_settings(monkeypatch):
-    modules_using_settings = [
-        "crane",
-        "crane.deployment",
-        "crane.rancher.deployment",
-        "crane.rancher.models",
-        "crane.hooks.datadog",
-    ]
-    for module in modules_using_settings:
-        monkeypatch.setattr(module + ".settings", defaultdict(lambda: None))
-
-
-@pytest.fixture(autouse=True)
 def gitlab_ci_env(monkeypatch):
     monkeypatch.setenv("GITLAB_USER_EMAIL", "picky@kiwi.com")
     monkeypatch.setenv("CI_PROJECT_PATH", "foo/bar")

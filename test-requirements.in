@@ -1,3 +1,4 @@
 pytest
+pytest-click
 pytest-mock
 requests-mock

@@ -10,7 +10,7 @@ with open("test-requirements.in") as f:
 
 setup(
     name="crane",
-    version="3.2.1",
+    version="4.0.0",
     url="https://github.com/kiwicom/crane",
     author="Bence Nagy",
     author_email="bence@kiwi.com",
@@ -19,7 +19,7 @@ setup(
     packages=find_packages(),
     install_requires=install_requires,
     tests_require=tests_require,
-    entry_points={"console_scripts": "crane=crane.cli:main"},
+    entry_points={"console_scripts": "crane=crane.cli:cli"},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Environment :: Console",

@@ -1,4 +1,5 @@
 import time
+import types
 
 import pybreaker
 import pytest
@@ -10,8 +11,15 @@ from crane.rancher import deployment as uut
 
 
 @pytest.fixture
-def fake_deployment(repo):
-    return uut.Deployment(repo=repo, old_version="HEAD", new_version="HEAD")
+def ctx():
+    ctx = types.SimpleNamespace()
+    ctx.params = {"url": "https://rancher.example.com", "env": "0a0", "stack": "0st0"}
+    return ctx
+
+
+@pytest.fixture
+def fake_deployment(ctx, repo):
+    return uut.Deployment(ctx=ctx, repo=repo, old_version="HEAD", new_version="HEAD")
 
 
 class FakeService:

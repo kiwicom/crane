@@ -3,17 +3,16 @@ from os import environ
 
 import datadog
 
-from .. import settings
 from .base import Base
 
 
 class Hook(Base):
     def __init__(self, deployment):
         super().__init__(deployment)
-        datadog.initialize(api_key=settings["datadog_key"])
+        datadog.initialize(api_key=self.ctx.params["datadog_key"])
 
-        self.after_upgrade_success = partial(self.create_event, "success")
-        self.after_upgrade_failure = partial(self.create_event, "error")
+        self.success = partial(self.create_event, "success")
+        self.failure = partial(self.create_event, "error")
 
     def create_event(self, alert_type):
         prefix = ""
@@ -38,4 +37,4 @@ class Hook(Base):
 
     @property
     def is_active(self):
-        return bool(settings.get("datadog_key"))
+        return bool(self.ctx.params.get("datadog_key"))
