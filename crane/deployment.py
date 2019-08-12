@@ -1,6 +1,7 @@
 import re
 import time
 from os import environ
+from time import time
 
 import attr
 import click
@@ -81,7 +82,7 @@ class Base:
 
     @property
     def id(self):
-        return self.old_version + self.new_version
+        return f"{self.old_version}-{self.new_version}@{time()}"
 
     @property
     def commits(self):

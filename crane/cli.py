@@ -71,5 +71,5 @@ def deploy(ctx, target, **kwargs):
         hooks.dispatch("success", deployment=deployment)
 
 
-announce.params += options.FOR_HOOKS
-deploy.params += [*options.FOR_HOOKS, *options.FOR_DEPLOYS, *options.FOR_RANCHER]
+cli.params += options.FOR_HOOKS
+deploy.params += [*options.FOR_DEPLOYS, *options.FOR_RANCHER]
