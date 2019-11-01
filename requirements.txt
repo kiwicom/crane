@@ -4,7 +4,7 @@
 #
 #    pip-compile --output-file ./requirements.txt ./requirements.in
 #
-attrs==19.1.0
+attrs==19.3.0
 backoff==1.8.0
 certifi==2019.3.9         # via requests
 chardet==3.0.4            # via requests
