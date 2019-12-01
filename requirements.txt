@@ -12,7 +12,7 @@ click==7.0
 datadog==0.28.0
 decorator==4.4.0          # via datadog
 gitdb2==2.0.5             # via gitpython
-gitpython==2.1.11
+gitpython==3.0.5
 idna==2.8                 # via requests
 pybreaker==0.5.0
 requests==2.21.0
