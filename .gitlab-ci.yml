@@ -1,0 +1,51 @@
+---
+stages:
+  - build
+  - test
+  - release
+
+variables:
+  IMAGE_LABELS: >
+    --label vcs-url=$CI_PROJECT_URL
+    --label com.skypicker.gitlab.ci.builder=$GITLAB_USER_EMAIL
+    --label com.skypicker.gitlab.ci.pipeline=$CI_PROJECT_URL/pipelines/$CI_PIPELINE_ID
+    --label com.skypicker.gitlab.ci.ref=$CI_BUILD_REF_NAME
+    --label com.skypicker.gitlab.ci.build=$CI_PROJECT_URL/builds/$CI_BUILD_ID
+
+image: docker:18.06
+services:
+  - docker:dind
+
+before_script:
+  - docker login -u $CI_REGISTRY_USER -p $CI_JOB_TOKEN $CI_REGISTRY || true
+
+build:
+  stage: build
+  script:
+    - >
+      docker build .
+      --label build-date=`date -Iseconds`
+      $IMAGE_LABELS
+      --tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+      --tag $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+    - docker push $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_REF_SLUG
+
+release-tag:
+  stage: release
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+    - docker push $CI_REGISTRY_IMAGE:$CI_BUILD_TAG
+  only:
+    - tags
+
+release-latest:
+  stage: release
+  image: docker:1.12
+  script:
+    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA
+    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHA $CI_REGISTRY_IMAGE:latest
+    - docker push $CI_REGISTRY_IMAGE:latest
+  only:
+    - master
