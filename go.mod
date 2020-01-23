@@ -8,6 +8,7 @@ require (
 	github.com/jarcoal/httpmock v1.0.4
 	github.com/kr/pretty v0.1.0 // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/urfave/cli/v2 v2.1.1
 	github.com/xanzy/go-gitlab v0.22.3
 	golang.org/x/net v0.0.0-20190724013045-ca1201d0de80 // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
