@@ -1,35 +1,37 @@
 package announcer
 
-type Result int 
+type Result int
+
 const (
-    Ok Result = iota
-    Error
+	Ok Result = iota
+	Error
 )
 
 func (r Result) String() string {
-    names := [...]string{"Ok", "Error"}
+	names := [...]string{"Ok", "Error"}
 
-    if r < Ok || r > Error {
-        return "Unknown"
-    }
+	if r < Ok || r > Error {
+		return "Unknown"
+	}
 
-    return names[r]
+	return names[r]
 }
 
 func (r Result) IsErr() bool {
-    return !r.IsOk()
+	return !r.IsOk()
 }
 
 func (r Result) IsOk() bool {
-    return r == Ok
+	return r == Ok
 }
 
 type Response struct {
-    Response Result
-    Err error
+	Response Result
+	Err      error
 }
 
 type Announcer interface {
-    Publish(note *Notification) Response
-    Update(note *Notification) Response
+	Start(note *Notification) Response
+	Success(note *Notification) Response
+	Failure(note *Notification) Response
 }
