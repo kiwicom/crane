@@ -1,10 +1,9 @@
 package slack
 
-
 import (
 	"fmt"
-	"testing"
 	"net/http"
+	"testing"
 )
 
 const (
@@ -19,5 +18,5 @@ func checkAuthorization(req *http.Request, t *testing.T) {
 
 	if authorization != fmt.Sprintf("Bearer %s", SLACK_DUMMY_TOKEN) {
 		t.Errorf("got %s as token expected %q", authorization, SLACK_DUMMY_TOKEN)
-	}	
+	}
 }

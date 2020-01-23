@@ -1,12 +1,11 @@
 package slack
 
-
 import (
 	"fmt"
-	"time"
-	"testing"
-	"reflect"
 	"net/http"
+	"reflect"
+	"testing"
+	"time"
 
 	"github.com/jarcoal/httpmock"
 )
@@ -95,11 +94,11 @@ func TestDefaultChannelServiceList(t *testing.T) {
 	endpoint_url := "https://slack.com/api/channels.list"
 
 	httpmock.RegisterResponder("GET", endpoint_url,
-	func(req *http.Request) (*http.Response, error) {
-		checkAuthorization(req, t)
+		func(req *http.Request) (*http.Response, error) {
+			checkAuthorization(req, t)
 
-		return httpmock.NewStringResponse(200, jsonResponse), nil
-	})
+			return httpmock.NewStringResponse(200, jsonResponse), nil
+		})
 
 	resp, err := channelService.List()
 	if err != nil {
@@ -111,25 +110,24 @@ func TestDefaultChannelServiceList(t *testing.T) {
 		t.Errorf("%s called 0 times expected 1", endpoint_url)
 	}
 
-
 	if len(resp) == 0 {
-        t.Error("Got empty list of channels, expected non empty!")
-    }
+		t.Error("Got empty list of channels, expected non empty!")
+	}
 
-    expected := []Channel{
-    	{"C0G9QF9GW", "random"} ,
-    	{"C0G9QKBBL", "general"},
-    }
+	expected := []Channel{
+		{"C0G9QF9GW", "random"},
+		{"C0G9QKBBL", "general"},
+	}
 
-    if !reflect.DeepEqual(resp, expected) {
-    	t.Errorf("got %q, want %q", resp, expected)
-    }
+	if !reflect.DeepEqual(resp, expected) {
+		t.Errorf("got %q, want %q", resp, expected)
+	}
 
 }
 
 func TestDefaultChannelServiceInfo(t *testing.T) {
-    httpmock.Activate()
-    defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
 
 	channelService := &DefaultChannelService{
 		&http.Client{},
@@ -137,7 +135,7 @@ func TestDefaultChannelServiceInfo(t *testing.T) {
 		"https://slack.com/api",
 	}
 
-    jsonResponse := `{
+	jsonResponse := `{
         "ok": true,
         "channel": {
             "id": "C1H9RESGL",
@@ -191,62 +189,62 @@ func TestDefaultChannelServiceInfo(t *testing.T) {
         }
     }`
 
-    jsonErrorResponse := `{
+	jsonErrorResponse := `{
         "ok": false,
         "error": "channel_not_found"
     }`
 
-    endpoint_url := "https://slack.com/api/channels.info"
-    httpmock.RegisterResponder("GET", endpoint_url,
-    func(req *http.Request) (*http.Response, error) {
-        checkAuthorization(req, t)
+	endpoint_url := "https://slack.com/api/channels.info"
+	httpmock.RegisterResponder("GET", endpoint_url,
+		func(req *http.Request) (*http.Response, error) {
+			checkAuthorization(req, t)
 
-        channel := req.URL.Query().Get("channel")
-        if channel == "" {
-            t.Error("Expected channel parameter found none!")
-        }
+			channel := req.URL.Query().Get("channel")
+			if channel == "" {
+				t.Error("Expected channel parameter found none!")
+			}
 
-        if channel == "C1H9RESGL" {
-            return httpmock.NewStringResponse(200, jsonResponse), nil
-        }
+			if channel == "C1H9RESGL" {
+				return httpmock.NewStringResponse(200, jsonResponse), nil
+			}
 
-        return httpmock.NewStringResponse(200, jsonErrorResponse), nil
-    })
+			return httpmock.NewStringResponse(200, jsonErrorResponse), nil
+		})
 
-    resp, err := channelService.Info("C1H9RESGL")
-    if err != nil {
-        t.Error(err)
-    }
+	resp, err := channelService.Info("C1H9RESGL")
+	if err != nil {
+		t.Error(err)
+	}
 
-    expected := Channel{"C1H9RESGL", "busting"}
+	expected := Channel{"C1H9RESGL", "busting"}
 
-    if !reflect.DeepEqual(resp, expected) {
-        t.Errorf("got %q, want %q", resp, expected)
-    }
+	if !reflect.DeepEqual(resp, expected) {
+		t.Errorf("got %q, want %q", resp, expected)
+	}
 
-    resp, err = channelService.Info("NonExistingChannelId")
-    if err == nil {
-        t.Error("Expected channel not found error")
-    }
+	resp, err = channelService.Info("NonExistingChannelId")
+	if err == nil {
+		t.Error("Expected channel not found error")
+	}
 
-    if err.Error() != "channel_not_found" {
-        t.Errorf("Expected `channel_not_found` error got %q", err)
-    }
-    
-    info := httpmock.GetCallCountInfo()
+	if err.Error() != "channel_not_found" {
+		t.Errorf("Expected `channel_not_found` error got %q", err)
+	}
 
-    called := info[fmt.Sprintf("GET %s", endpoint_url)]
-    expected_called := 2
+	info := httpmock.GetCallCountInfo()
 
-    if called != expected_called {
-        t.Errorf("%s cexpected to be called %d times got %d ", endpoint_url, expected_called, called)
-    }
+	called := info[fmt.Sprintf("GET %s", endpoint_url)]
+	expected_called := 2
+
+	if called != expected_called {
+		t.Errorf("%s cexpected to be called %d times got %d ", endpoint_url, expected_called, called)
+	}
 
 }
 
 func TestDefaultChannelServiceHistory_Response(t *testing.T) {
-    httpmock.Activate()
-    defer httpmock.DeactivateAndReset()
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
 
 	channelService := &DefaultChannelService{
 		&http.Client{},
@@ -254,7 +252,7 @@ func TestDefaultChannelServiceHistory_Response(t *testing.T) {
 		"https://slack.com/api",
 	}
 
-    jsonResponse := `{
+	jsonResponse := `{
         "ok": true,
         "messages": [
             {
@@ -315,184 +313,182 @@ func TestDefaultChannelServiceHistory_Response(t *testing.T) {
         "has_more": false
     }`
 
-    jsonErrorResponse := `{
+	jsonErrorResponse := `{
         "ok": false,
         "error": "channel_not_found"
     }`
 
-    endpoint_url := "https://slack.com/api/channels.history"
-    httpmock.RegisterResponder("GET", endpoint_url,
-    func(req *http.Request) (*http.Response, error) {
-        checkAuthorization(req, t)
+	endpoint_url := "https://slack.com/api/channels.history"
+	httpmock.RegisterResponder("GET", endpoint_url,
+		func(req *http.Request) (*http.Response, error) {
+			checkAuthorization(req, t)
 
-        channel := req.URL.Query().Get("channel")
-        if channel == "" {
-            t.Error("Expected channel parameter found none!")
-        }
+			channel := req.URL.Query().Get("channel")
+			if channel == "" {
+				t.Error("Expected channel parameter found none!")
+			}
 
-        if channel != "C1H9RESGL" {
-            return httpmock.NewStringResponse(200, jsonErrorResponse), nil
-        }
+			if channel != "C1H9RESGL" {
+				return httpmock.NewStringResponse(200, jsonErrorResponse), nil
+			}
 
-        return httpmock.NewStringResponse(200, jsonResponse), nil
-    })  
+			return httpmock.NewStringResponse(200, jsonResponse), nil
+		})
 
-    resp, err := channelService.History("C1H9RESGL", nil)
-    if err != nil {
-        t.Error(err)
-    }
+	resp, err := channelService.History("C1H9RESGL", nil)
+	if err != nil {
+		t.Error(err)
+	}
 
-    expected := []Message{
-            Message{
-                Type:"message", 
-                User:"U2147483896", 
-                Text:"Hello", 
-                IsStarred:false, 
-                Reactions:[]Reaction(nil), 
-                Attachments:[]Attachment(nil), 
-                Ts:"1358546515.000008",
-            }, 
-            Message{
-                Type:"message", 
-                User:"U2147483896", 
-                Text:"World", 
-                IsStarred:true, 
-                Reactions:[]Reaction{
-                    Reaction{
-                        Name:"space_invader", 
-                        Count:3, 
-                        Users:[]string{"U1", "U2", "U3"},
-                    }, 
-                    Reaction{
-                        Name:"sweet_potato", 
-                        Count:5, 
-                        Users:[]string{"U1", "U2", "U3", "U4", "U5"},
-                    },
-                }, 
-                Attachments:[]Attachment(nil), 
-                Ts:"1358546515.000007",
-            }, 
-            Message{
-                Type:"something_else", 
-                User:"", 
-                Text:"", 
-                IsStarred:false, 
-                Reactions:[]Reaction(nil), 
-                Attachments:[]Attachment(nil), 
-                Ts:"1358546515.000007",
-            }, 
-            Message{
-                Type:"message", 
-                User:"", 
-                Text:"Containment unit is 98% full", 
-                IsStarred:false, Reactions:[]Reaction(nil), 
-                Attachments:[]Attachment{
-                    Attachment{
-                        Color:"", 
-                        Fallback:"This is an attachment fallback", 
-                        Text:"Don't get too attached", 
-                        AuthorIcon:"", 
-                        AuthorLink:"", 
-                        AuthorName:"", 
-                        Fields:[]Field(nil), 
-                        Footer:"", 
-                        FooterIcon:"", 
-                        ImageUrl:"", 
-                        MrkdwnIn:[]string(nil), 
-                        Pretext:"", 
-                        ThumbUrl:"", 
-                        Title:"", 
-                        TitleLink:"", 
-                        Ts:"",
-                    },
-                }, 
-                Ts:"1503435956.000247",
-            },
-        }
+	expected := []Message{
+		Message{
+			Type:        "message",
+			User:        "U2147483896",
+			Text:        "Hello",
+			IsStarred:   false,
+			Reactions:   []Reaction(nil),
+			Attachments: []Attachment(nil),
+			Ts:          "1358546515.000008",
+		},
+		Message{
+			Type:      "message",
+			User:      "U2147483896",
+			Text:      "World",
+			IsStarred: true,
+			Reactions: []Reaction{
+				Reaction{
+					Name:  "space_invader",
+					Count: 3,
+					Users: []string{"U1", "U2", "U3"},
+				},
+				Reaction{
+					Name:  "sweet_potato",
+					Count: 5,
+					Users: []string{"U1", "U2", "U3", "U4", "U5"},
+				},
+			},
+			Attachments: []Attachment(nil),
+			Ts:          "1358546515.000007",
+		},
+		Message{
+			Type:        "something_else",
+			User:        "",
+			Text:        "",
+			IsStarred:   false,
+			Reactions:   []Reaction(nil),
+			Attachments: []Attachment(nil),
+			Ts:          "1358546515.000007",
+		},
+		Message{
+			Type:      "message",
+			User:      "",
+			Text:      "Containment unit is 98% full",
+			IsStarred: false, Reactions: []Reaction(nil),
+			Attachments: []Attachment{
+				Attachment{
+					Color:      "",
+					Fallback:   "This is an attachment fallback",
+					Text:       "Don't get too attached",
+					AuthorIcon: "",
+					AuthorLink: "",
+					AuthorName: "",
+					Fields:     []Field(nil),
+					Footer:     "",
+					FooterIcon: "",
+					ImageUrl:   "",
+					MrkdwnIn:   []string(nil),
+					Pretext:    "",
+					ThumbUrl:   "",
+					Title:      "",
+					TitleLink:  "",
+					Ts:         "",
+				},
+			},
+			Ts: "1503435956.000247",
+		},
+	}
 
-    if !reflect.DeepEqual(resp, expected) {
-        t.Errorf("got %v, want %v", resp, expected)
-    }
+	if !reflect.DeepEqual(resp, expected) {
+		t.Errorf("got %v, want %v", resp, expected)
+	}
 
+	resp, err = channelService.History("NonExistingChannelId", nil)
+	if err == nil {
+		t.Error("Expected channel not found error")
+	}
 
-    resp, err = channelService.History("NonExistingChannelId", nil)
-    if err == nil {
-        t.Error("Expected channel not found error")
-    }
+	if err.Error() != "channel_not_found" {
+		t.Errorf("Expected `channel_not_found` error got %q", err)
+	}
 
-    if err.Error() != "channel_not_found" {
-        t.Errorf("Expected `channel_not_found` error got %q", err)
-    }   
+	info := httpmock.GetCallCountInfo()
 
-    info := httpmock.GetCallCountInfo()
+	called := info[fmt.Sprintf("GET %s", endpoint_url)]
+	expected_called := 2
 
-    called := info[fmt.Sprintf("GET %s", endpoint_url)]
-    expected_called := 2
-
-    if called != expected_called {
-        t.Errorf("%s cexpected to be called %d times got %d ", endpoint_url, expected_called, called)
-    }   
+	if called != expected_called {
+		t.Errorf("%s cexpected to be called %d times got %d ", endpoint_url, expected_called, called)
+	}
 }
 
-
 func TestSlackApiChannelHistory_UrlFormating(t *testing.T) {
-    now := time.Now()
-    yesterday := now.Add(-24 * time.Hour)
+	now := time.Now()
+	yesterday := now.Add(-24 * time.Hour)
 
-    channelService := &DefaultChannelService{
+	channelService := &DefaultChannelService{
 		&http.Client{},
 		SLACK_DUMMY_TOKEN,
 		"https://slack.com/api",
 	}
 
-    var tests = []struct {
-        name string
-        channel_id string
-        opts *ChannelHistoryListOptions
-        out string
-    }{
-        {"ChannelHistoryDefaultSearchOptions", "dummy_channel", 
-            nil, "https://slack.com/api/channels.history?channel=dummy_channel",},
-        {"ChannelHistoryAllSearchOptions", "dummy_channel",
-            &ChannelHistoryListOptions{50, true, &now, &yesterday, true},
-            fmt.Sprintf(
-                "https://slack.com/api/channels.history?channel=dummy_channel&count=50&inclusive=1&latest=%d&oldest=%d&unreads=1",
-                MakeTimestamp(&now), MakeTimestamp(&yesterday)),},
-        {"ChannelHistoryInclusiveSearchOptions", "dummy_channel",
-            &ChannelHistoryListOptions{0, true, nil, nil, false},
-            "https://slack.com/api/channels.history?channel=dummy_channel&inclusive=1"},
-        {"ChannelHistoryLatestSearchOptions", "dummy_channel",
-            &ChannelHistoryListOptions{0, false, &now, nil, false},
-            fmt.Sprintf("https://slack.com/api/channels.history?channel=dummy_channel&latest=%d", MakeTimestamp(&now)),},
-        {"ChannelHistoryInclusiveLatestUnreadsSearchOptions", "dummy_channel",
-            &ChannelHistoryListOptions{0, true, &now, nil, true},
-            fmt.Sprintf(
-                "https://slack.com/api/channels.history?channel=dummy_channel&inclusive=1&latest=%d&unreads=1", 
-                MakeTimestamp(&now)),},
-        {"ChannelHistoryCountSearchOptions", "dummy_channel",
-            &ChannelHistoryListOptions{45, false, nil, nil, false},
-            "https://slack.com/api/channels.history?channel=dummy_channel&count=45"},
-    }
+	var tests = []struct {
+		name       string
+		channel_id string
+		opts       *ChannelHistoryListOptions
+		out        string
+	}{
+		{"ChannelHistoryDefaultSearchOptions", "dummy_channel",
+			nil, "https://slack.com/api/channels.history?channel=dummy_channel"},
+		{"ChannelHistoryAllSearchOptions", "dummy_channel",
+			&ChannelHistoryListOptions{50, true, &now, &yesterday, true},
+			fmt.Sprintf(
+				"https://slack.com/api/channels.history?channel=dummy_channel&count=50&inclusive=1&latest=%d&oldest=%d&unreads=1",
+				MakeTimestamp(&now), MakeTimestamp(&yesterday))},
+		{"ChannelHistoryInclusiveSearchOptions", "dummy_channel",
+			&ChannelHistoryListOptions{0, true, nil, nil, false},
+			"https://slack.com/api/channels.history?channel=dummy_channel&inclusive=1"},
+		{"ChannelHistoryLatestSearchOptions", "dummy_channel",
+			&ChannelHistoryListOptions{0, false, &now, nil, false},
+			fmt.Sprintf("https://slack.com/api/channels.history?channel=dummy_channel&latest=%d", MakeTimestamp(&now))},
+		{"ChannelHistoryInclusiveLatestUnreadsSearchOptions", "dummy_channel",
+			&ChannelHistoryListOptions{0, true, &now, nil, true},
+			fmt.Sprintf(
+				"https://slack.com/api/channels.history?channel=dummy_channel&inclusive=1&latest=%d&unreads=1",
+				MakeTimestamp(&now))},
+		{"ChannelHistoryCountSearchOptions", "dummy_channel",
+			&ChannelHistoryListOptions{45, false, nil, nil, false},
+			"https://slack.com/api/channels.history?channel=dummy_channel&count=45"},
+	}
 
-    for _, tt := range tests {
-        t.Run(tt.name, func(t *testing.T) {
-            httpmock.Activate()
-            defer httpmock.DeactivateAndReset()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			httpmock.Activate()
+			defer httpmock.DeactivateAndReset()
 
-            endpoint_url := "https://slack.com/api/channels.history"
-            httpmock.RegisterResponder("GET", endpoint_url,
-            func(req *http.Request) (*http.Response, error) {
-                checkAuthorization(req, t)
+			endpoint_url := "https://slack.com/api/channels.history"
+			httpmock.RegisterResponder("GET", endpoint_url,
+				func(req *http.Request) (*http.Response, error) {
+					checkAuthorization(req, t)
 
-                got := req.URL.String()
-                if got != tt.out {
-                    t.Errorf("got %q, want %q", got, tt.out)
-                }
+					got := req.URL.String()
+					if got != tt.out {
+						t.Errorf("got %q, want %q", got, tt.out)
+					}
 
-                return httpmock.NewStringResponse(200, "ok"), nil
-            })
+					return httpmock.NewStringResponse(200, "ok"), nil
+				})
 
-            channelService.History(tt.channel_id, tt.opts)           
-        })
-    }
+			channelService.History(tt.channel_id, tt.opts)
+		})
+	}
 }

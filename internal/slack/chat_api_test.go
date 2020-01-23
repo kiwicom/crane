@@ -1,12 +1,11 @@
 package slack
 
-
 import (
-	"fmt"
-	"testing"
-	"reflect"
-	"net/http"
 	"encoding/json"
+	"fmt"
+	"net/http"
+	"reflect"
+	"testing"
 
 	"github.com/jarcoal/httpmock"
 )
@@ -50,42 +49,39 @@ func TestDefaultChatServicePost(t *testing.T) {
 	endpoint_url := "https://slack.com/api/chat.postMessage"
 
 	message := PostChatMessage{
-	    Channel: "C1H9RESGL",
-	    Text: "Here's a message for you",
-	    AsUser: true,
-	    Attachments: []Attachment{
-	    	Attachment{Text: "This is an attachment", Fallback: "This is an attachment's fallback",},
-	    },			
+		Channel: "C1H9RESGL",
+		Text:    "Here's a message for you",
+		AsUser:  true,
+		Attachments: []Attachment{
+			Attachment{Text: "This is an attachment", Fallback: "This is an attachment's fallback"},
+		},
 	}
 
 	httpmock.RegisterResponder("POST", endpoint_url,
-	func(req *http.Request) (*http.Response, error) {
-		checkAuthorization(req, t)
+		func(req *http.Request) (*http.Response, error) {
+			checkAuthorization(req, t)
 
-		var result PostChatMessage
-		json.NewDecoder(req.Body).Decode(&result)
+			var result PostChatMessage
+			json.NewDecoder(req.Body).Decode(&result)
 
-		if result.Channel != "C1H9RESGL" {
-			return httpmock.NewStringResponse(200, errorResponse), nil
-		} 
-		
-		if !reflect.DeepEqual(result, message) {
-			t.Errorf("got %#v, want %#v", result, message)
-		}
+			if result.Channel != "C1H9RESGL" {
+				return httpmock.NewStringResponse(200, errorResponse), nil
+			}
 
+			if !reflect.DeepEqual(result, message) {
+				t.Errorf("got %#v, want %#v", result, message)
+			}
 
-
-		return httpmock.NewStringResponse(200, jsonResponse), nil
-	})
-
+			return httpmock.NewStringResponse(200, jsonResponse), nil
+		})
 
 	resp, err := chatService.Post(message)
 	if err != nil {
 		t.Error(err)
 	}
 
-	expectedMessage := "Here's a message for you" 
-	if resp.Text !=  expectedMessage {
+	expectedMessage := "Here's a message for you"
+	if resp.Text != expectedMessage {
 		t.Errorf("got %q, want %q", resp.Text, expectedMessage)
 	}
 
@@ -97,13 +93,13 @@ func TestDefaultChatServicePost(t *testing.T) {
 
 	message.Channel = "NonExistingChannelId"
 	resp, err = chatService.Post(message)
-    if err == nil {
-        t.Error("Expected channel not found error")
-    }
+	if err == nil {
+		t.Error("Expected channel not found error")
+	}
 
-    if err.Error() != "channel_not_found" {
-        t.Errorf("Expected `channel_not_found` error got %q", err)
-    }  	
+	if err.Error() != "channel_not_found" {
+		t.Errorf("Expected `channel_not_found` error got %q", err)
+	}
 
 	info := httpmock.GetCallCountInfo()
 	if info[fmt.Sprintf("POST %s", endpoint_url)] != 2 {
@@ -136,30 +132,29 @@ func TestDefaultChatServiceUpdate(t *testing.T) {
 	endpoint_url := "https://slack.com/api/chat.update"
 
 	message := UpdateChatMessage{
-	    Channel: "C1H9RESGL",
-	    Text: "Updated text you carefully authored",
-	    Ts: "1401383885.000061",
-	    AsUser: true,		
+		Channel: "C1H9RESGL",
+		Text:    "Updated text you carefully authored",
+		Ts:      "1401383885.000061",
+		AsUser:  true,
 	}
 
 	httpmock.RegisterResponder("POST", endpoint_url,
-	func(req *http.Request) (*http.Response, error) {
-		checkAuthorization(req, t)
+		func(req *http.Request) (*http.Response, error) {
+			checkAuthorization(req, t)
 
-		var result UpdateChatMessage
-		json.NewDecoder(req.Body).Decode(&result)
+			var result UpdateChatMessage
+			json.NewDecoder(req.Body).Decode(&result)
 
-		if result.Channel != "C1H9RESGL" {
-			return httpmock.NewStringResponse(200, errorResponse), nil
-		} 
-		
-		if !reflect.DeepEqual(result, message) {
-			t.Errorf("got %#v, want %#v", result, message)
-		}
+			if result.Channel != "C1H9RESGL" {
+				return httpmock.NewStringResponse(200, errorResponse), nil
+			}
 
-		return httpmock.NewStringResponse(200, jsonResponse), nil
-	})
+			if !reflect.DeepEqual(result, message) {
+				t.Errorf("got %#v, want %#v", result, message)
+			}
 
+			return httpmock.NewStringResponse(200, jsonResponse), nil
+		})
 
 	ts, text, err := chatService.Update(message)
 	if err != nil {
@@ -171,25 +166,23 @@ func TestDefaultChatServiceUpdate(t *testing.T) {
 		t.Errorf("got %q, want %q", ts, expectedTs)
 	}
 
-	expectedMessage := "Updated text you carefully authored" 
-	if text !=  expectedMessage {
+	expectedMessage := "Updated text you carefully authored"
+	if text != expectedMessage {
 		t.Errorf("got %q, want %q", text, expectedMessage)
 	}
 
-
 	message.Channel = "NonExistingChannelId"
 	_, _, err = chatService.Update(message)
-    if err == nil {
-        t.Error("Expected channel not found error")
-    }
+	if err == nil {
+		t.Error("Expected channel not found error")
+	}
 
-    if err.Error() != "channel_not_found" {
-        t.Errorf("Expected `channel_not_found` error got %q", err)
-    }  	
+	if err.Error() != "channel_not_found" {
+		t.Errorf("Expected `channel_not_found` error got %q", err)
+	}
 
 	info := httpmock.GetCallCountInfo()
 	if info[fmt.Sprintf("POST %s", endpoint_url)] != 2 {
 		t.Errorf("%s called 0 times expected 2", endpoint_url)
 	}
 }
-
