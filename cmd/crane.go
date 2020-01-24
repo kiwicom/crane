@@ -4,9 +4,24 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
+	"github.com/kiwicom/crane/pkg/announcer"
 	"github.com/urfave/cli/v2"
 )
+
+var globalFlags = []cli.Flag{
+	&cli.StringFlag{
+		Name:    "old-commit",
+		Usage:   "commit hash we are upgrading from",
+		EnvVars: []string{"CRANE_OLD_COMMIT"},
+	},
+	&cli.StringFlag{
+		Name:    "new-commit",
+		Usage:   "commit hash to upgrade to",
+		EnvVars: []string{"CRANE_NEW_COMMIT", "CI_COMMIT_SHA"},
+	},
+}
 
 var deployFlags = []cli.Flag{
 	&cli.IntFlag{
@@ -28,16 +43,6 @@ var deployFlags = []cli.Flag{
 		EnvVars: []string{"CRANE_START_FIRST"},
 	},
 	&cli.StringFlag{
-		Name:    "old-commit",
-		Usage:   "commit hash we are upgrading from",
-		EnvVars: []string{"CRANE_OLD_COMMIT"},
-	},
-	&cli.StringFlag{
-		Name:    "new-commit",
-		Usage:   "commit hash to upgrade to",
-		EnvVars: []string{"CRANE_NEW_COMMIT", "CI_COMMIT_SHA"},
-	},
-	&cli.StringFlag{
 		Name:    "new-image",
 		Usage:   "image URL to upgrade to",
 		EnvVars: []string{"CRANE_NEW_IMAGE"},
@@ -54,8 +59,7 @@ var deployFlags = []cli.Flag{
 		Usage:   "skip automatic upgrade finish",
 		EnvVars: []string{"CRANE_MANUAL_FINISH"},
 	},
-
-	// Rancher options
+	// Rancher flags
 	&cli.StringFlag{
 		Name:     "rancher-url",
 		EnvVars:  []string{"RANCHER_URL"},
@@ -140,6 +144,44 @@ var announceFlags = []cli.Flag{
 	},
 }
 
+func deploy(c *cli.Context) error {
+	fmt.Println("deploy")
+	return nil
+}
+
+type announceHandler func(*cli.Context, *announcer.SlackAnnouncer, *announcer.Notification) error
+
+func announce(handler announceHandler) func(*cli.Context) error {
+	return func(c *cli.Context) error {
+		note := announcer.NewNotification(
+			announcer.WithChannels(c.String("slack-channels")),
+			announcer.WithMessage("Test"),
+			announcer.WithTimestamp(time.Now()),
+		)
+		slack, err := announcer.NewSlackAnnouncer(c.String("slack-token"))
+		if err != nil {
+			return err
+		}
+		err = handler(c, slack, note)
+		return err
+	}
+}
+
+func start(c *cli.Context, slack *announcer.SlackAnnouncer, note *announcer.Notification) error {
+	slack.Start(note)
+	return nil
+}
+
+func finishWithSuccess(c *cli.Context, slack *announcer.SlackAnnouncer, note *announcer.Notification) error {
+	slack.Success(note)
+	return nil
+}
+
+func finishWithFailure(c *cli.Context, slack *announcer.SlackAnnouncer, note *announcer.Notification) error {
+	slack.Failure(note)
+	return nil
+}
+
 func main() {
 	app := &cli.App{
 		Name:    "A CI deploy assistant",
@@ -147,42 +189,30 @@ func main() {
 		Version: "4.0.0",
 		Commands: []*cli.Command{
 			{
-				Name:  "deploy",
-				Usage: "manage both upgrading the services and announcing the deployment",
-				Action: func(c *cli.Context) error {
-					fmt.Println("Not implemented yet.")
-					return nil
-				},
-				Flags: deployFlags,
+				Name:   "deploy",
+				Usage:  "manage both upgrading the services and announcing the deployment",
+				Action: deploy,
+				Flags:  append(globalFlags, deployFlags...),
 			},
 			{
 				Name:  "announce",
 				Usage: "announce releases while managing upgrading the app yourself",
-				Flags: announceFlags,
+				Flags: append(globalFlags, announceFlags...),
 				Subcommands: []*cli.Command{
 					{
-						Name:  "start",
-						Usage: "start announcement of the deployment",
-						Action: func(c *cli.Context) error {
-							fmt.Println("start")
-							return nil
-						},
+						Name:   "start",
+						Usage:  "start announcement of the deployment",
+						Action: announce(start),
 					},
 					{
-						Name:  "success",
-						Usage: "finish announcement with success",
-						Action: func(c *cli.Context) error {
-							fmt.Println("finish with success")
-							return nil
-						},
+						Name:   "success",
+						Usage:  "finish announcement with success",
+						Action: announce(finishWithSuccess),
 					},
 					{
-						Name:  "failure",
-						Usage: "finish announcement with failure",
-						Action: func(c *cli.Context) error {
-							fmt.Println("finish with failure")
-							return nil
-						},
+						Name:   "failure",
+						Usage:  "finish announcement with failure",
+						Action: announce(finishWithFailure),
 					},
 				},
 			},
