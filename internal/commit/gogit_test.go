@@ -7,7 +7,7 @@ import (
 func TestLocalRepoCommitsGetter(t *testing.T) {
 	newCommitSha := "9d6792a8fa9fb40e13a20060ae0d57dee115e4d0"
 	oldCommitSha := "a53c89ae30919af7556a28b660b997b8bf0df492"
-	repoPath := "/home/ivica/Development/git/source/crane"
+	repoPath := "../../"
 
 	commitsGetter := NewLocalRepoCommitsGetter()
 	cs, err := commitsGetter.GetCommits(repoPath, oldCommitSha, newCommitSha)
