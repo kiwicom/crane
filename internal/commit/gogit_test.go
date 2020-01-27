@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestLocalRepoCommitsGetter(t *testing.T) {
+func TestLocalRepoCommitsGetter_GetCommits(t *testing.T) {
 	newCommitSha := "9d6792a8fa9fb40e13a20060ae0d57dee115e4d0"
 	oldCommitSha := "a53c89ae30919af7556a28b660b997b8bf0df492"
 	repoPath := "../../"
@@ -21,5 +21,22 @@ func TestLocalRepoCommitsGetter(t *testing.T) {
 
 	if len(cs) != 3 {
 		t.Errorf("got %q, want %q", len(cs), 3)
+	}
+}
+
+
+
+func TestLocalRepoCommitsGetter_GetSingle(t *testing.T) {
+	commitSha := "9d6792a8fa9fb40e13a20060ae0d57dee115e4d0"
+	repoPath := "../../"
+
+	commitsGetter := NewLocalRepoCommitsGetter()
+	cs, err := commitsGetter.GetSingle(repoPath, commitSha)
+	if err != nil {
+		t.Error(err)
+	} 
+
+	if cs.Summary != "basic implementation of cli\n" {
+		t.Errorf("got %q, want %q", cs.Summary, "basic implementation of cli\n")
 	}
 }
