@@ -8,6 +8,10 @@ import (
 	"gopkg.in/src-d/go-git.v4/plumbing"	
 )
 
+var (
+	ErrRepoIdMustBeAPath = errors.New("repo_id must be a string and its assumed to be a path to the local repository")
+)
+
 type LocalRepoCommitsGetter struct {}
 
 func NewLocalRepoCommitsGetter() *LocalRepoCommitsGetter {
@@ -52,7 +56,7 @@ func (gg *LocalRepoCommitsGetter) GetCommits(repo_id interface{}, old_commit, ne
 
 		return commits, nil
 	default:
-		return []Commit{}, errors.New("repo_id must should be a string path to the local repository")
+		return []Commit{}, ErrRepoIdMustBeAPath
 	} 
 }
 
@@ -78,6 +82,6 @@ func (gg *LocalRepoCommitsGetter) GetSingle(repo_id interface{}, commit_sha stri
 
 		return result, nil
 	default:
-		return Commit{}, errors.New("repo_id must should be a string path to the local repository")
+		return Commit{}, ErrRepoIdMustBeAPath
 	}
 }
