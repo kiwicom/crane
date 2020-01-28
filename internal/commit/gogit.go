@@ -36,10 +36,6 @@ func (gg *LocalRepoCommitsGetter) GetCommits(repo_id interface{}, old_commit, ne
 
 		och := plumbing.NewHash(old_commit)
 		for c, err := ci.Next(); err == nil; {
-			if err != nil {
-				return []Commit{}, errors.Wrap(err, "Error fetching commit")
-			}
-
 			cmt := Commit{
 				Hexsha: c.Hash.String(),
 				Summary: c.Message,
@@ -52,6 +48,10 @@ func (gg *LocalRepoCommitsGetter) GetCommits(repo_id interface{}, old_commit, ne
 			}	
 
 			c, err = ci.Next()		
+		}
+
+		if err != nil {
+			return []Commit{}, errors.Wrap(err, "Error fetching commit")
 		}
 
 		return commits, nil
