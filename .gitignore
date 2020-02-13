@@ -266,3 +266,6 @@ $RECYCLE.BIN/
 
 # dotEnv
 .env
+
+# nix-shell GOPATH dir
+.go

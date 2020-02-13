@@ -40,3 +40,14 @@ func TestLocalRepoCommitsGetter_GetSingle(t *testing.T) {
 		t.Errorf("got %q, want %q", cs.Summary, "basic implementation of cli\n")
 	}
 }
+
+func TestLocalRepoCommitsGetter_GetHead(t *testing.T) {
+	repoPath := "../../"
+
+	commitsGetter := NewLocalRepoCommitsGetter()
+	_ , err := commitsGetter.GetHead(repoPath)
+
+	if err != nil {
+		t.Error(err)
+	}
+}
