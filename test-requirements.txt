@@ -4,17 +4,37 @@
 #
 #    pip-compile --output-file ./test-requirements.txt ./test-requirements.in
 #
-atomicwrites==1.3.0       # via pytest
-attrs==19.1.0             # via pytest
-certifi==2019.3.9         # via requests
-chardet==3.0.4            # via requests
-idna==2.8                 # via requests
-more-itertools==7.0.0     # via pytest
-pluggy==0.9.0             # via pytest
-py==1.8.0                 # via pytest
+attrs==20.3.0
+    # via pytest
+certifi==2019.3.9
+    # via requests
+chardet==3.0.4
+    # via requests
+idna==2.8
+    # via requests
+iniconfig==1.1.1
+    # via pytest
+packaging==20.9
+    # via pytest
+pluggy==0.13.1
+    # via pytest
+py==1.10.0
+    # via pytest
+pyparsing==2.4.7
+    # via packaging
 pytest-mock==1.10.3
-pytest==4.4.0
+    # via -r test-requirements.in
+pytest==6.2.2
+    # via
+    #   -r test-requirements.in
+    #   pytest-mock
 requests-mock==1.5.2
-requests==2.21.0          # via requests-mock
-six==1.12.0               # via pytest, requests-mock
-urllib3==1.24.1           # via requests
+    # via -r test-requirements.in
+requests==2.21.0
+    # via requests-mock
+six==1.12.0
+    # via requests-mock
+toml==0.10.2
+    # via pytest
+urllib3==1.24.1
+    # via requests
