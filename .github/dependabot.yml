@@ -1,0 +1,34 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: gitpython
+    versions:
+    - 3.1.11
+    - 3.1.12
+  - dependency-name: pytest-mock
+    versions:
+    - 3.4.0
+  - dependency-name: pytest
+    versions:
+    - 6.2.1
+  - dependency-name: datadog
+    versions:
+    - 0.39.0
+  rebase-strategy: disabled
+- package-ecosystem: docker
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: "04:00"
+  open-pull-requests-limit: 10
+  ignore:
+  - dependency-name: python
+    versions:
+    - 3.9.1.pre.alpine
+  rebase-strategy: disabled
