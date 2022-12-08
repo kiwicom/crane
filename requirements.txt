@@ -5,17 +5,34 @@
 #    pip-compile --output-file ./requirements.txt ./requirements.in
 #
 attrs==19.1.0
+    # via -r requirements.in
 backoff==1.8.0
-certifi==2019.3.9         # via requests
-chardet==3.0.4            # via requests
+    # via -r requirements.in
+certifi==2022.12.7
+    # via requests
+chardet==3.0.4
+    # via requests
 click==7.0
+    # via -r requirements.in
 datadog==0.28.0
-decorator==4.4.0          # via datadog
-gitdb2==2.0.5             # via gitpython
+    # via -r requirements.in
+decorator==4.4.0
+    # via datadog
+gitdb2==2.0.5
+    # via gitpython
 gitpython==2.1.11
-idna==2.8                 # via requests
+    # via -r requirements.in
+idna==2.8
+    # via requests
 pybreaker==0.5.0
+    # via -r requirements.in
 requests==2.21.0
-six==1.12.0               # via pybreaker
-smmap2==2.0.5             # via gitdb2
-urllib3==1.24.1           # via requests
+    # via
+    #   -r requirements.in
+    #   datadog
+six==1.12.0
+    # via pybreaker
+smmap2==2.0.5
+    # via gitdb2
+urllib3==1.24.1
+    # via requests
