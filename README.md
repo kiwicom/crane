@@ -7,7 +7,6 @@ See the [whole story on our blog at code.kiwi.com](https://code.kiwi.com/announc
 
 [![Python: 3.7](https://img.shields.io/badge/python-3.7-blue.svg)](https://python.org)
 [![Code style: black](https://img.shields.io/badge/code%20style-black-black.svg)](https://github.com/ambv/black)
-[![Discord](https://img.shields.io/discord/427417507276783616.svg)](https://discord.gg/AtwevVQ)
 [![Gitlab pipeline status (branch)](https://img.shields.io/gitlab/pipeline/kiwicom/crane/master.svg)](https://gitlab.com/kiwicom/crane/pipelines)
 
 ## Usage
